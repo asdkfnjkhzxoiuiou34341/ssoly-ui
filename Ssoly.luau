@@ -529,11 +529,23 @@ function Ssoly:Window(cfg)
 		Position = UDim2.new(0.5,0,1,10),
 		Size = UDim2.fromOffset(120,6),
 		BackgroundColor3 = theme.Stroke,
-		BackgroundTransparency = 0.7,
+		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		Parent = gui
 	})
 	create("UICorner", {CornerRadius = UDim.new(1,0), Parent = resizeBarBottom})
+	
+	main.MouseEnter:Connect(function()
+		tween(resizeBarBottom, TweenInfo.new(0.3), {BackgroundTransparency = 0.7})
+		tween(resizeIndicator, TweenInfo.new(0.3), {BackgroundTransparency = 0.7})
+	end)
+	
+	main.MouseLeave:Connect(function()
+		if not resizingHeight and not resizingWidth then
+			tween(resizeBarBottom, TweenInfo.new(0.3), {BackgroundTransparency = 1})
+			tween(resizeIndicator, TweenInfo.new(0.3), {BackgroundTransparency = 1})
+		end
+	end)
 	
 	local resizeHeightBtn = create("TextButton", {
 		Size = UDim2.fromScale(1,1),
@@ -575,7 +587,7 @@ function Ssoly:Window(cfg)
 		Position = UDim2.fromScale(1,1),
 		Size = UDim2.fromOffset(22,6),
 		BackgroundColor3 = theme.Stroke,
-		BackgroundTransparency = 0.7,
+		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		Rotation = -45,
 		Parent = resizeCorner
@@ -703,6 +715,17 @@ function Ssoly:Window(cfg)
 		create("UICorner", {CornerRadius = UDim.new(0,8), Parent = tabBtn})
 		create("UIStroke", {Color = theme.Stroke, Transparency = 0.8, Parent = tabBtn})
 		
+		local activeIndicator = create("Frame", {
+			Position = UDim2.fromOffset(0,7),
+			Size = UDim2.fromOffset(3,21),
+			BackgroundColor3 = theme.Accent,
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			Parent = tabBtn
+		})
+		
+		create("UICorner", {CornerRadius = UDim.new(1,0), Parent = activeIndicator})
+		
 		local tabContent_inner = create("Frame", {
 			Size = UDim2.fromScale(1,1),
 			BackgroundTransparency = 1,
@@ -763,18 +786,21 @@ function Ssoly:Window(cfg)
 		tabBtn.MouseButton1Click:Connect(function()
 			for _,t in pairs(tabs) do
 				tween(t.btn, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = theme.Element})
+				tween(t.indicator, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 1})
 				t.content.Visible = false
 			end
 			tween(tabBtn, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = theme.Accent})
+			tween(activeIndicator, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0})
 			tabContent.Visible = true
 			currentTab = tabContent
 		end)
 		
-		local tab = {btn = tabBtn, content = tabContent}
+		local tab = {btn = tabBtn, content = tabContent, indicator = activeIndicator}
 		table.insert(tabs, tab)
 		
 		if #tabs == 1 then
 			tabBtn.BackgroundColor3 = theme.Accent
+			activeIndicator.BackgroundTransparency = 0
 			tabContent.Visible = true
 			currentTab = tabContent
 		end
@@ -844,11 +870,10 @@ function Ssoly:Window(cfg)
 			create("UICorner", {CornerRadius = UDim.new(1,0), Parent = toggle})
 			
 			local circle = create("Frame", {
-				Position = cfg.Default and UDim2.new(1,-18,0.5,0) or UDim2.fromOffset(2,2),
+				Position = cfg.Default and UDim2.fromOffset(22,2) or UDim2.fromOffset(2,2),
 				Size = UDim2.fromOffset(16,16),
 				BackgroundColor3 = Color3.fromRGB(255,255,255),
 				BorderSizePixel = 0,
-				AnchorPoint = cfg.Default and Vector2.new(0,0.5) or Vector2.new(0,0),
 				Parent = toggle
 			})
 			
@@ -866,7 +891,7 @@ function Ssoly:Window(cfg)
 			btn.MouseButton1Click:Connect(function()
 				state = not state
 				tween(toggle, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = state and theme.Accent or theme.Stroke})
-				tween(circle, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Position = state and UDim2.new(1,-18,0.5,0) or UDim2.fromOffset(2,2), AnchorPoint = state and Vector2.new(0,0.5) or Vector2.new(0,0)})
+				tween(circle, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Position = state and UDim2.fromOffset(22,2) or UDim2.fromOffset(2,2)})
 				if cfg.Callback then cfg.Callback(state) end
 			end)
 			
@@ -877,7 +902,7 @@ function Ssoly:Window(cfg)
 				end
 			end
 			
-			return {Set = function(self, v) state = v tween(toggle, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = v and theme.Accent or theme.Stroke}) tween(circle, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Position = v and UDim2.new(1,-18,0.5,0) or UDim2.fromOffset(2,2)}) end}
+			return {Set = function(self, v) state = v tween(toggle, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = v and theme.Accent or theme.Stroke}) tween(circle, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Position = v and UDim2.fromOffset(22,2) or UDim2.fromOffset(2,2)}) end}
 		end
 		
 		function tab:Slider(cfg)
@@ -919,7 +944,7 @@ function Ssoly:Window(cfg)
 			
 			local slider = create("Frame", {
 				Position = UDim2.fromOffset(10,30),
-				Size = UDim2.new(1,-20,0,6),
+				Size = UDim2.new(1,-20,0,10),
 				BackgroundColor3 = theme.Stroke,
 				BorderSizePixel = 0,
 				Parent = frame
@@ -1086,16 +1111,16 @@ function Ssoly:Window(cfg)
 						selected = opt
 						label.Text = cfg.Name .. ": " .. opt
 						open = false
-						tween(arrow, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Rotation = 90})
-						tween(frame, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Size = UDim2.new(1,0,0,40)})
-						tween(list, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Size = UDim2.new(1,0,0,0), GroupTransparency = 1})
-						task.wait(0.3)
+						tween(arrow, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Rotation = 90})
+						tween(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,40)})
+						tween(list, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,0), GroupTransparency = 1})
+						task.wait(0.4)
 						if list then list:Destroy() list = nil end
 						if cfg.Callback then cfg.Callback(opt) end
 					end)
 				end
 				
-				tween(list, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Size = UDim2.new(1,0,0,dropdownHeight), GroupTransparency = 0})
+				tween(list, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,dropdownHeight), GroupTransparency = 0})
 			end)
 			
 			if cfg.Flag then 
@@ -1105,7 +1130,19 @@ function Ssoly:Window(cfg)
 				end
 			end
 			
-			return {Set = function(self, v) selected = v label.Text = cfg.Name .. ": " .. v end}
+			local dropdownObj = {}
+			
+			function dropdownObj:Set(v)
+				selected = v
+				label.Text = cfg.Name .. ": " .. v
+			end
+			
+			function dropdownObj:Refresh(newOptions)
+				cfg.Options = newOptions
+				dropdownHeight = math.min(#newOptions * 35, 200)
+			end
+			
+			return dropdownObj
 		end
 		
 		function tab:MultiDropdown(cfg)
@@ -1166,17 +1203,17 @@ function Ssoly:Window(cfg)
 			btn.MouseButton1Click:Connect(function()
 				if open then
 					open = false
-					tween(arrow, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Rotation = 90})
-					tween(frame, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Size = UDim2.new(1,0,0,40)})
-					tween(list, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Size = UDim2.new(1,0,0,0), GroupTransparency = 1})
-					task.wait(0.3)
+					tween(arrow, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Rotation = 90})
+					tween(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,40)})
+					tween(list, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,0), GroupTransparency = 1})
+					task.wait(0.4)
 					if list then list:Destroy() list = nil end
 					return
 					end
 				
 				open = true
-				tween(arrow, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Rotation = -90})
-				tween(frame, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Size = UDim2.new(1,0,0,45 + dropdownHeight)})
+				tween(arrow, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Rotation = -90})
+				tween(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,45 + dropdownHeight)})
 				
 				list = create("CanvasGroup", {
 					Position = UDim2.fromOffset(0,45),
@@ -1273,12 +1310,30 @@ function Ssoly:Window(cfg)
 					end)
 				end
 				
-				tween(list, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Size = UDim2.new(1,0,0,dropdownHeight), GroupTransparency = 0})
+				tween(list, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,dropdownHeight), GroupTransparency = 0})
 			end)
 			
 			if cfg.Flag then Ssoly.Flags[cfg.Flag] = {Type = "MultiDropdown", Get = function() return selected end, Set = function(v) selected = v end} end
 			
-			return {Set = function(self, v) selected = v label.Text = cfg.Name .. ": " .. getSelectedText() end, Get = function() return selected end}
+			local multiDropdownObj = {}
+			
+			function multiDropdownObj:Set(v)
+				selected = v
+				label.Text = cfg.Name .. ": " .. getSelectedText()
+			end
+			
+			function multiDropdownObj:Get()
+				return selected
+			end
+			
+			function multiDropdownObj:Refresh(newOptions)
+				cfg.Options = newOptions
+				dropdownHeight = math.min(#newOptions * 35, 200)
+				selected = {}
+				label.Text = cfg.Name .. ": None"
+			end
+			
+			return multiDropdownObj
 		end
 		
 		function tab:Keybind(cfg)
@@ -1442,11 +1497,11 @@ function Ssoly:Window(cfg)
 					end
 				
 				pickerOpen = true
-				tween(frame, TweenInfo.new(0.3), {Size = UDim2.new(1,0,0,220)})
+				tween(frame, TweenInfo.new(0.3), {Size = UDim2.new(1,0,0,260)})
 				
 				picker = create("Frame", {
 					Position = UDim2.fromOffset(10,50),
-					Size = UDim2.new(1,-20,0,160),
+					Size = UDim2.new(1,-20,0,200),
 					BackgroundTransparency = 1,
 					Parent = frame
 				})
@@ -1558,6 +1613,25 @@ function Ssoly:Window(cfg)
 							if cfg.Callback then cfg.Callback(currentColor) end
 						end
 					end
+				end)
+				
+				local selectBtn = create("TextButton", {
+					Position = UDim2.fromOffset(0,170),
+					Size = UDim2.new(1,0,0,25),
+					BackgroundColor3 = theme.Accent,
+					Text = "Select",
+					TextColor3 = Color3.fromRGB(255,255,255),
+					TextSize = 13,
+					Font = Enum.Font.GothamBold,
+					Parent = picker
+				})
+				
+				create("UICorner", {CornerRadius = UDim.new(0,6), Parent = selectBtn})
+				
+				selectBtn.MouseButton1Click:Connect(function()
+					pickerOpen = false
+					tween(frame, TweenInfo.new(0.3), {Size = UDim2.new(1,0,0,40)})
+					if picker then picker:Destroy() picker = nil end
 				end)
 				end)
 			
@@ -1717,10 +1791,20 @@ function Ssoly:Window(cfg)
 			
 			local collapsed = cfg.Collapsed or false
 			
+			local contentSize = create("UIScale", {Scale = 1, Parent = sectionContent})
+			
 			sectionHeader.MouseButton1Click:Connect(function()
 				collapsed = not collapsed
-				sectionContent.Visible = not collapsed
 				tween(arrow, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Rotation = collapsed and 90 or -90})
+				if collapsed then
+					tween(contentSize, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Scale = 0})
+					task.wait(0.3)
+					sectionContent.Visible = false
+				else
+					sectionContent.Visible = true
+					contentSize.Scale = 0
+					tween(contentSize, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Scale = 1})
+				end
 			end)
 			
 			create("UIListLayout", {Padding = UDim.new(0,6), Parent = sectionContent})
@@ -1914,7 +1998,7 @@ function Ssoly:Window(cfg)
 		local notifScale = create("UIScale", {Scale = 0})
 		
 		local notif = create("Frame", {
-			Size = UDim2.fromOffset(cfg.SizeX or 280, 0),
+			Size = UDim2.fromOffset(cfg.SizeX or 320, 0),
 			AutomaticSize = Enum.AutomaticSize.Y,
 			BackgroundColor3 = theme.Element,
 			BorderSizePixel = 0,
@@ -1923,9 +2007,9 @@ function Ssoly:Window(cfg)
 		
 		notifScale.Parent = notif
 		
-		create("UICorner", {CornerRadius = UDim.new(0,8), Parent = notif})
+		create("UICorner", {CornerRadius = UDim.new(0,10), Parent = notif})
 		create("UIStroke", {Color = theme.Stroke, Transparency = 0.5, Parent = notif})
-		create("UIPadding", {PaddingTop = UDim.new(0,12), PaddingBottom = UDim.new(0,12), PaddingLeft = UDim.new(0,12), PaddingRight = UDim.new(0,12), Parent = notif})
+		create("UIPadding", {PaddingTop = UDim.new(0,15), PaddingBottom = UDim.new(0,15), PaddingLeft = UDim.new(0,15), PaddingRight = UDim.new(0,15), Parent = notif})
 		
 		local layout = create("UIListLayout", {Padding = UDim.new(0,5), Parent = notif})
 		
@@ -1940,7 +2024,7 @@ function Ssoly:Window(cfg)
 			BackgroundTransparency = 1,
 			Text = cfg.Title or "Notification",
 			TextColor3 = theme.Text,
-			TextSize = 13,
+			TextSize = 15,
 			TextXAlignment = Enum.TextXAlignment.Left,
 			Font = Enum.Font.GothamBold,
 			Parent = titleFrame
@@ -1967,7 +2051,7 @@ function Ssoly:Window(cfg)
 			BackgroundTransparency = 1,
 			Text = cfg.Description or "",
 			TextColor3 = theme.TextDim,
-			TextSize = 11,
+			TextSize = 13,
 			TextXAlignment = Enum.TextXAlignment.Left,
 			TextYAlignment = Enum.TextYAlignment.Top,
 			TextWrapped = true,
