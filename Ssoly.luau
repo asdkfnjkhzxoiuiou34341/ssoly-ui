@@ -388,13 +388,12 @@ function Ssoly:Window(cfg)
 	
 	local resizeConnection
 	resizeConnection = UIS.InputChanged:Connect(function(input)
-		if resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
+		if resizing and input.UserInputType == Enum.UserInputType.MouseMovement and startX and startWidth then
 			local delta = UIS:GetMouseLocation().X - startX
 			local newWidth = math.clamp(startWidth + delta, 150, 400)
 			sidebar.Size = UDim2.new(0, newWidth, 1, -40)
 			content.Position = UDim2.fromOffset(newWidth, 40)
 			content.Size = UDim2.new(1, -newWidth, 1, -40)
-			searchBox.Size = UDim2.new(1, -20, 0, 32)
 		end
 	end)
 	
@@ -523,12 +522,17 @@ function Ssoly:Window(cfg)
 		Parent = main
 	})
 	
-	local notifs = create("Frame", {
+	local notifs = create("ScrollingFrame", {
 		Name = "Notifs",
 		AnchorPoint = Vector2.new(1,1),
 		Position = UDim2.new(1,-10,1,-10),
-		Size = UDim2.fromOffset(300,0),
+		Size = UDim2.new(0,300,1,-20),
 		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		ScrollBarThickness = 0,
+		CanvasSize = UDim2.fromScale(1,0),
+		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+		ScrollingDirection = Enum.ScrollingDirection.Y,
 		Parent = gui
 	})
 	
@@ -537,7 +541,7 @@ function Ssoly:Window(cfg)
 	-- Палочка для высоты (по центру внизу)
 	local resizeBarBottom = create("Frame", {
 		AnchorPoint = Vector2.new(0.5,0),
-		Position = UDim2.new(0.5,0,1,-3),
+		Position = UDim2.new(0.5,0,1,-5),
 		Size = UDim2.fromOffset(80,6),
 		BackgroundColor3 = theme.Accent,
 		BackgroundTransparency = 0.5,
@@ -549,7 +553,7 @@ function Ssoly:Window(cfg)
 	-- Палочка для ширины (справа по центру)
 	local resizeBarRight = create("Frame", {
 		AnchorPoint = Vector2.new(0,0.5),
-		Position = UDim2.new(1,-3,0.5,0),
+		Position = UDim2.new(1,-5,0.5,0),
 		Size = UDim2.fromOffset(6,80),
 		BackgroundColor3 = theme.Accent,
 		BackgroundTransparency = 0.5,
@@ -660,7 +664,7 @@ function Ssoly:Window(cfg)
 	end)
 	
 	UIS.InputChanged:Connect(function(input)
-		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement and input.Position then
 			local delta = input.Position - dragStart
 			main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 		end
@@ -697,6 +701,9 @@ function Ssoly:Window(cfg)
 	end)
 	
 	close.MouseButton1Click:Connect(function()
+		local targetSize = UDim2.fromOffset(main.AbsoluteSize.X * 0.9, main.AbsoluteSize.Y * 0.9)
+		tween(main, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {GroupTransparency = 1, Size = targetSize})
+		task.wait(0.3)
 		window:Destroy()
 	end)
 	
@@ -1491,20 +1498,27 @@ function Ssoly:Window(cfg)
 			colorBox.MouseButton1Click:Connect(function()
 				if pickerOpen then
 					pickerOpen = false
-					tween(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,40)})
-					if picker then picker:Destroy() picker = nil end
+					if picker then 
+						tween(picker, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {GroupTransparency = 1})
+						task.wait(0.3)
+						picker:Destroy() 
+						picker = nil 
+					end
 					return
 					end
 				
 				pickerOpen = true
-				tween(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,240)})
 				
-				picker = create("Frame", {
+				picker = create("CanvasGroup", {
 					Position = UDim2.fromOffset(10,50),
 					Size = UDim2.new(1,-20,0,180),
 					BackgroundTransparency = 1,
+					GroupTransparency = 1,
+					ZIndex = 10,
 					Parent = frame
 				})
+				
+				tween(picker, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {GroupTransparency = 0})
 				
 				local h,s,v = currentColor:ToHSV()
 				
@@ -1639,8 +1653,12 @@ function Ssoly:Window(cfg)
 				
 				selectBtn.MouseButton1Click:Connect(function()
 					pickerOpen = false
-					tween(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,40)})
-					if picker then picker:Destroy() picker = nil end
+					if picker then 
+						tween(picker, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {GroupTransparency = 1})
+						task.wait(0.3)
+						picker:Destroy() 
+						picker = nil 
+					end
 				end)
 				end)
 			
