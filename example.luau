@@ -1,7 +1,7 @@
 local Ssoly = loadstring(game:HttpGet("https://raw.githubusercontent.com/asdkfnjkhzxoiuiou34341/ssoly-ui/refs/heads/main/Ssoly.luau"))()
 
 local Window = Ssoly:Window({
-	Title = "Ssoly UI - Full Demo",
+	Title = "Ssoly UI - Enhanced Demo",
 	Theme = "Dark",
 	Size = UDim2.fromOffset(750, 550),
 	Keybind = Enum.KeyCode.RightControl,
@@ -9,19 +9,22 @@ local Window = Ssoly:Window({
 	Blur = true,
 	AcrylicBlur = true,
 	AutoSave = true,
-	ConfigName = "demo_config"
+	ConfigName = "ssoly_demo"
 })
 
 -- Tab 1: Основные элементы
 local MainTab = Window:Tab({Name = "Main", Icon = "7733955511"})
 
 MainTab:Header({Text = "Основные элементы"})
-MainTab:Paragraph({Header = "Добро пожаловать!", Body = "Это полная демонстрация всех возможностей библиотеки Ssoly UI."})
+MainTab:Paragraph({
+	Header = "Добро пожаловать в Ssoly UI!",
+	Body = "Это улучшенная демонстрация всех возможностей библиотеки. Попробуйте все элементы!"
+})
 
 MainTab:Button({
-	Name = "Простая кнопка",
+	Name = "Тестовая кнопка",
 	Callback = function()
-		Window:Notify({Title = "Кнопка", Description = "Вы нажали на кнопку!", Lifetime = 2})
+		Window:Notify({Title = "Успех", Description = "Кнопка работает!", Lifetime = 2})
 	end
 })
 
@@ -35,7 +38,7 @@ local toggle = MainTab:Toggle({
 })
 
 local slider = MainTab:Slider({
-	Name = "Слайдер",
+	Name = "Слайдер значений",
 	Min = 0,
 	Max = 100,
 	Default = 50,
@@ -105,7 +108,7 @@ local colorPicker = InputTab:ColorPicker({
 	end
 })
 
-local label = InputTab:Label({Text = "Это обычный текст"})
+local label = InputTab:Label({Text = "Динамический текст"})
 
 task.spawn(function()
 	local counter = 0
@@ -253,6 +256,20 @@ NotifyTab:Button({
 	end
 })
 
+NotifyTab:Button({
+	Name = "Спам уведомлений (тест скролла)",
+	Callback = function()
+		for i = 1, 10 do
+			Window:Notify({
+				Title = "Уведомление #" .. i,
+				Description = "Это тестовое уведомление для проверки скролла",
+				Lifetime = 5
+			})
+			task.wait(0.1)
+		end
+	end
+})
+
 -- Tab 5: Настройки
 local SettingsTab = Window:Tab({Name = "Settings", Icon = "7734053495"})
 
@@ -341,7 +358,8 @@ AdvancedTab:Button({
 	Callback = function()
 		toggle:Set(math.random() > 0.5)
 		slider:Set(math.random(0, 100))
-		dropdown:Set({"Опция 1", "Опция 2", "Опция 3", "Опция 4"}[math.random(1, 4)])
+		local options = {"Опция 1", "Опция 2", "Опция 3", "Опция 4"}
+		dropdown:Set(options[math.random(1, 4)])
 		colorPicker:Set(Color3.fromRGB(math.random(0, 255), math.random(0, 255), math.random(0, 255)))
 		Window:Notify({Title = "Готово", Description = "Значения изменены!", Lifetime = 2})
 	end
@@ -390,13 +408,46 @@ AdvancedTab:Button({
 	end
 })
 
+AdvancedTab:Divider()
+
+AdvancedTab:Header({Text = "Новые возможности"})
+
+AdvancedTab:Button({
+	Name = "Тест анимации закрытия",
+	Callback = function()
+		Window:Notify({
+			Title = "Подсказка",
+			Description = "Нажмите на кнопку закрытия (X) чтобы увидеть анимацию!",
+			Lifetime = 3
+		})
+	end
+})
+
+AdvancedTab:Button({
+	Name = "Тест ресайза окна",
+	Callback = function()
+		Window:Notify({
+			Title = "Подсказка",
+			Description = "Используйте палочки внизу и справа для изменения размера окна!",
+			Lifetime = 4
+		})
+	end
+})
+
+AdvancedTab:Button({
+	Name = "Тест ресайза сайдбара",
+	Callback = function()
+		Window:Notify({
+			Title = "Подсказка",
+			Description = "Потяните за разделитель между сайдбаром и контентом!",
+			Lifetime = 4
+		})
+	end
+})
+
 -- Приветственное уведомление
 Window:Notify({
 	Title = "Добро пожаловать!",
-	Description = "Ssoly UI загружен. Исследуйте все возможности библиотеки!",
-	Lifetime = 4
+	Description = "Ssoly UI успешно загружен. Изучите все возможности библиотеки!",
+	Lifetime = 5
 })
-
-print("Ssoly UI Demo загружен!")
-print("Горячая клавиша:", Window:GetKeybind().Name)
-print("Текущая тема:", Window:GetTheme())
