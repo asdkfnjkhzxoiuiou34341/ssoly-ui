@@ -276,18 +276,39 @@ function Ssoly:Window(cfg)
 	local controls = create("Frame", {
 		AnchorPoint = Vector2.new(1,0.5),
 		Position = UDim2.new(1,-15,0.5,0),
-		Size = UDim2.fromOffset(80,28),
+		Size = UDim2.fromOffset(116,28),
 		BackgroundTransparency = 1,
 		Parent = topbar
 	})
 	
 	create("UIListLayout", {Padding = UDim.new(0,8), FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Right, VerticalAlignment = Enum.VerticalAlignment.Center, Parent = controls})
 	
+	local fullscreen = create("TextButton", {
+		Size = UDim2.fromOffset(28,28),
+		BackgroundColor3 = theme.ElementHover,
+		BackgroundTransparency = 0,
+		Text = "",
+		Parent = controls
+	})
+	create("UICorner", {CornerRadius = UDim.new(0,6), Parent = fullscreen})
+	create("UIStroke", {Color = theme.Stroke, Transparency = 0.7, Parent = fullscreen})
+	
+	local fullscreenIcon = create("ImageLabel", {
+		AnchorPoint = Vector2.new(0.5,0.5),
+		Position = UDim2.fromScale(0.5,0.5),
+		Size = UDim2.fromOffset(14,14),
+		BackgroundTransparency = 1,
+		Image = "rbxassetid://7734053426",
+		ImageColor3 = theme.Text,
+		Parent = fullscreen
+	})
+	
 	local minimize = create("TextButton", {
 		Size = UDim2.fromOffset(28,28),
 		BackgroundColor3 = theme.ElementHover,
 		BackgroundTransparency = 0,
 		Text = "",
+		LayoutOrder = 1,
 		Parent = controls
 	})
 	create("UICorner", {CornerRadius = UDim.new(0,6), Parent = minimize})
@@ -308,7 +329,7 @@ function Ssoly:Window(cfg)
 		BackgroundColor3 = theme.ElementHover,
 		BackgroundTransparency = 0,
 		Text = "",
-		LayoutOrder = 1,
+		LayoutOrder = 2,
 		Parent = controls
 	})
 	create("UICorner", {CornerRadius = UDim.new(0,6), Parent = close})
@@ -324,6 +345,22 @@ function Ssoly:Window(cfg)
 		Rotation = 45,
 		Parent = close
 	})
+	
+	local isFullscreen = false
+	local savedSize = cfg.Size or UDim2.fromOffset(700,500)
+	
+	fullscreen.MouseEnter:Connect(function() tween(fullscreen, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = theme.Element}) end)
+	fullscreen.MouseLeave:Connect(function() tween(fullscreen, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = theme.ElementHover}) end)
+	fullscreen.MouseButton1Click:Connect(function()
+		isFullscreen = not isFullscreen
+		if isFullscreen then
+			savedSize = main.Size
+			local vpSize = workspace.CurrentCamera.ViewportSize
+			tween(main, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Size = UDim2.fromOffset(vpSize.X - 20, vpSize.Y - 20)})
+		else
+			tween(main, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Size = savedSize})
+		end
+	end)
 	
 	minimize.MouseEnter:Connect(function() tween(minimize, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = theme.Element}) end)
 	minimize.MouseLeave:Connect(function() tween(minimize, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = theme.ElementHover}) end)
@@ -413,7 +450,7 @@ function Ssoly:Window(cfg)
 		Parent = userInfo
 	})
 	
-	create("UIPadding", {PaddingLeft = UDim.new(0,5), PaddingBottom = UDim.new(0,10), Parent = userInfoContent})
+	create("UIPadding", {PaddingLeft = UDim.new(0,12), PaddingBottom = UDim.new(0,10), Parent = userInfoContent})
 	create("UIListLayout", {Padding = UDim.new(0,8), FillDirection = Enum.FillDirection.Horizontal, VerticalAlignment = Enum.VerticalAlignment.Center, Parent = userInfoContent})
 	
 	local userId = Player.UserId
@@ -541,7 +578,7 @@ function Ssoly:Window(cfg)
 	-- Палочка для высоты (по центру внизу)
 	local resizeBarBottom = create("Frame", {
 		AnchorPoint = Vector2.new(0.5,0),
-		Position = UDim2.new(0.5,0,1,-5),
+		Position = UDim2.new(0.5,0,1,5),
 		Size = UDim2.fromOffset(80,6),
 		BackgroundColor3 = theme.Accent,
 		BackgroundTransparency = 0.5,
@@ -553,7 +590,7 @@ function Ssoly:Window(cfg)
 	-- Палочка для ширины (справа по центру)
 	local resizeBarRight = create("Frame", {
 		AnchorPoint = Vector2.new(0,0.5),
-		Position = UDim2.new(1,-5,0.5,0),
+		Position = UDim2.new(1,5,0.5,0),
 		Size = UDim2.fromOffset(6,80),
 		BackgroundColor3 = theme.Accent,
 		BackgroundTransparency = 0.5,
@@ -664,7 +701,7 @@ function Ssoly:Window(cfg)
 	end)
 	
 	UIS.InputChanged:Connect(function(input)
-		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement and input.Position then
+		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement and dragStart and startPos and input.Position then
 			local delta = input.Position - dragStart
 			main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 		end
@@ -791,14 +828,25 @@ function Ssoly:Window(cfg)
 		end)
 		
 		tabBtn.MouseButton1Click:Connect(function()
+			if currentTab == tabContent then return end
 			for _,t in pairs(tabs) do
 				tween(t.btn, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = theme.Element})
 				tween(t.indicator, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.InOut), {BackgroundTransparency = 1, Size = UDim2.fromOffset(3,15)})
-				t.content.Visible = false
+				if t.content.Visible then
+					local contentScale = Instance.new("UIScale", t.content)
+					contentScale.Scale = 1
+					tween(contentScale, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {Scale = 0.95})
+					task.wait(0.2)
+					t.content.Visible = false
+					contentScale:Destroy()
+				end
 			end
 			tween(tabBtn, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = theme.Accent})
 			tween(activeIndicator, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.InOut), {BackgroundTransparency = 0, Size = UDim2.fromOffset(3,21)})
 			tabContent.Visible = true
+			local contentScale = Instance.new("UIScale", tabContent)
+			contentScale.Scale = 0.95
+			tween(contentScale, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {Scale = 1})
 			currentTab = tabContent
 		end)
 		
