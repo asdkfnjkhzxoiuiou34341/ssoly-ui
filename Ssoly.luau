@@ -98,10 +98,15 @@ function Ssoly:SaveConfig(name)
 	name = name or "default"
 	local config = {}
 	for flag, data in pairs(self.Flags) do
-		config[flag] = data.Get()
+		local value = data.Get()
+		if typeof(value) == "Color3" then
+			config[flag] = {R = value.R, G = value.G, B = value.B, _type = "Color3"}
+		else
+			config[flag] = value
+		end
 	end
 	local success, encoded = pcall(function() return HS:JSONEncode(config) end)
-	if success then
+	if success and writefile then
 		writefile("ssoly_" .. name .. ".json", encoded)
 		return true
 	end
@@ -111,12 +116,16 @@ end
 function Ssoly:LoadConfig(name)
 	name = name or "default"
 	local file = "ssoly_" .. name .. ".json"
-	if not isfile or not isfile(file) then return false end
+	if not isfile or not isfile(file) or not readfile then return false end
 	local success, config = pcall(function() return HS:JSONDecode(readfile(file)) end)
 	if success and config then
 		for flag, value in pairs(config) do
 			if self.Flags[flag] then
-				self.Flags[flag].Set(value)
+				if type(value) == "table" and value._type == "Color3" then
+					self.Flags[flag].Set(Color3.new(value.R, value.G, value.B))
+				else
+					self.Flags[flag].Set(value)
+				end
 			end
 		end
 		return true
@@ -377,13 +386,15 @@ function Ssoly:Window(cfg)
 		end
 	end)
 	
-	UIS.InputChanged:Connect(function(input)
+	local resizeConnection
+	resizeConnection = UIS.InputChanged:Connect(function(input)
 		if resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
 			local delta = UIS:GetMouseLocation().X - startX
 			local newWidth = math.clamp(startWidth + delta, 150, 400)
 			sidebar.Size = UDim2.new(0, newWidth, 1, -40)
 			content.Position = UDim2.fromOffset(newWidth, 40)
 			content.Size = UDim2.new(1, -newWidth, 1, -40)
+			searchBox.Size = UDim2.new(1, -20, 0, 32)
 		end
 	end)
 	
@@ -403,7 +414,7 @@ function Ssoly:Window(cfg)
 		Parent = userInfo
 	})
 	
-	create("UIPadding", {PaddingLeft = UDim.new(0,10), PaddingBottom = UDim.new(0,10), Parent = userInfoContent})
+	create("UIPadding", {PaddingLeft = UDim.new(0,5), PaddingBottom = UDim.new(0,10), Parent = userInfoContent})
 	create("UIListLayout", {Padding = UDim.new(0,8), FillDirection = Enum.FillDirection.Horizontal, VerticalAlignment = Enum.VerticalAlignment.Center, Parent = userInfoContent})
 	
 	local userId = Player.UserId
@@ -523,27 +534,39 @@ function Ssoly:Window(cfg)
 	
 	create("UIListLayout", {Padding = UDim.new(0,10), VerticalAlignment = Enum.VerticalAlignment.Bottom, Parent = notifs})
 	
-	-- Палочка для высоты (по центру внизу) - ОТДЕЛЬНО от меню
+	-- Палочка для высоты (по центру внизу)
 	local resizeBarBottom = create("Frame", {
 		AnchorPoint = Vector2.new(0.5,0),
-		Position = UDim2.new(0.5,0,1,10),
-		Size = UDim2.fromOffset(120,6),
-		BackgroundColor3 = theme.Stroke,
-		BackgroundTransparency = 1,
+		Position = UDim2.new(0.5,0,1,-3),
+		Size = UDim2.fromOffset(80,6),
+		BackgroundColor3 = theme.Accent,
+		BackgroundTransparency = 0.5,
 		BorderSizePixel = 0,
-		Parent = gui
+		Parent = main
 	})
 	create("UICorner", {CornerRadius = UDim.new(1,0), Parent = resizeBarBottom})
 	
+	-- Палочка для ширины (справа по центру)
+	local resizeBarRight = create("Frame", {
+		AnchorPoint = Vector2.new(0,0.5),
+		Position = UDim2.new(1,-3,0.5,0),
+		Size = UDim2.fromOffset(6,80),
+		BackgroundColor3 = theme.Accent,
+		BackgroundTransparency = 0.5,
+		BorderSizePixel = 0,
+		Parent = main
+	})
+	create("UICorner", {CornerRadius = UDim.new(1,0), Parent = resizeBarRight})
+	
 	main.MouseEnter:Connect(function()
-		tween(resizeBarBottom, TweenInfo.new(0.3), {BackgroundTransparency = 0.7})
-		tween(resizeIndicator, TweenInfo.new(0.3), {BackgroundTransparency = 0.7})
+		tween(resizeBarBottom, TweenInfo.new(0.3), {BackgroundTransparency = 0.3})
+		tween(resizeBarRight, TweenInfo.new(0.3), {BackgroundTransparency = 0.3})
 	end)
 	
 	main.MouseLeave:Connect(function()
 		if not resizingHeight and not resizingWidth then
-			tween(resizeBarBottom, TweenInfo.new(0.3), {BackgroundTransparency = 1})
-			tween(resizeIndicator, TweenInfo.new(0.3), {BackgroundTransparency = 1})
+			tween(resizeBarBottom, TweenInfo.new(0.3), {BackgroundTransparency = 0.5})
+			tween(resizeBarRight, TweenInfo.new(0.3), {BackgroundTransparency = 0.5})
 		end
 	end)
 	
@@ -558,12 +581,12 @@ function Ssoly:Window(cfg)
 	local startY, startHeight
 	
 	resizeHeightBtn.MouseEnter:Connect(function()
-		tween(resizeBarBottom, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.4, Size = UDim2.fromOffset(130,6)})
+		tween(resizeBarBottom, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.2, Size = UDim2.fromOffset(90,6)})
 	end)
 	
 	resizeHeightBtn.MouseLeave:Connect(function()
 		if not resizingHeight then
-			tween(resizeBarBottom, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.7, Size = UDim2.fromOffset(120,6)})
+			tween(resizeBarBottom, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.3, Size = UDim2.fromOffset(80,6)})
 		end
 	end)
 	
@@ -573,44 +596,23 @@ function Ssoly:Window(cfg)
 		startHeight = main.AbsoluteSize.Y
 	end)
 	
-	-- Палочка для ширины (справа внизу в углу) - ОТДЕЛЬНО от меню
-	local resizeCorner = create("Frame", {
-		AnchorPoint = Vector2.new(0,0),
-		Position = UDim2.new(1,10,1,-20),
-		Size = UDim2.fromOffset(30,30),
-		BackgroundTransparency = 1,
-		Parent = gui
-	})
-	
-	local resizeIndicator = create("Frame", {
-		AnchorPoint = Vector2.new(1,1),
-		Position = UDim2.fromScale(1,1),
-		Size = UDim2.fromOffset(22,6),
-		BackgroundColor3 = theme.Stroke,
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		Rotation = -45,
-		Parent = resizeCorner
-	})
-	create("UICorner", {CornerRadius = UDim.new(1,0), Parent = resizeIndicator})
-	
 	local resizeWidthBtn = create("TextButton", {
 		Size = UDim2.fromScale(1,1),
 		BackgroundTransparency = 1,
 		Text = "",
-		Parent = resizeCorner
+		Parent = resizeBarRight
 	})
 	
 	local resizingWidth = false
 	local startX, startWidth
 	
 	resizeWidthBtn.MouseEnter:Connect(function()
-		tween(resizeIndicator, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.4, Size = UDim2.fromOffset(26,6)})
+		tween(resizeBarRight, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.2, Size = UDim2.fromOffset(6,90)})
 	end)
 	
 	resizeWidthBtn.MouseLeave:Connect(function()
 		if not resizingWidth then
-			tween(resizeIndicator, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.7, Size = UDim2.fromOffset(22,6)})
+			tween(resizeBarRight, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.3, Size = UDim2.fromOffset(6,80)})
 		end
 	end)
 	
@@ -624,11 +626,11 @@ function Ssoly:Window(cfg)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			if resizingHeight then
 				resizingHeight = false
-				tween(resizeBarBottom, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.7, Size = UDim2.fromOffset(120,6)})
+				tween(resizeBarBottom, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.3, Size = UDim2.fromOffset(80,6)})
 			end
 			if resizingWidth then
 				resizingWidth = false
-				tween(resizeIndicator, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.7, Size = UDim2.fromOffset(22,6)})
+				tween(resizeBarRight, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.3, Size = UDim2.fromOffset(6,80)})
 			end
 		end
 	end)
@@ -639,13 +641,11 @@ function Ssoly:Window(cfg)
 				local delta = UIS:GetMouseLocation().Y - startY
 				local newHeight = math.clamp(startHeight + delta, 400, 800)
 				main.Size = UDim2.fromOffset(main.AbsoluteSize.X, newHeight)
-				resizeBarBottom.Position = UDim2.new(0.5,0,0.5,newHeight/2 + 10)
 			end
 			if resizingWidth then
 				local delta = UIS:GetMouseLocation().X - startX
 				local newWidth = math.clamp(startWidth + delta, 500, 1200)
 				main.Size = UDim2.fromOffset(newWidth, main.AbsoluteSize.Y)
-				resizeCorner.Position = UDim2.new(0.5,newWidth/2 + 10,0.5,main.AbsoluteSize.Y/2 - 20)
 			end
 		end
 	end)
@@ -786,11 +786,11 @@ function Ssoly:Window(cfg)
 		tabBtn.MouseButton1Click:Connect(function()
 			for _,t in pairs(tabs) do
 				tween(t.btn, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = theme.Element})
-				tween(t.indicator, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 1})
+				tween(t.indicator, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.InOut), {BackgroundTransparency = 1, Size = UDim2.fromOffset(3,15)})
 				t.content.Visible = false
 			end
 			tween(tabBtn, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = theme.Accent})
-			tween(activeIndicator, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0})
+			tween(activeIndicator, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.InOut), {BackgroundTransparency = 0, Size = UDim2.fromOffset(3,21)})
 			tabContent.Visible = true
 			currentTab = tabContent
 		end)
@@ -1111,16 +1111,16 @@ function Ssoly:Window(cfg)
 						selected = opt
 						label.Text = cfg.Name .. ": " .. opt
 						open = false
-						tween(arrow, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Rotation = 90})
-						tween(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,40)})
-						tween(list, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,0), GroupTransparency = 1})
-						task.wait(0.4)
+						tween(arrow, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Rotation = 90})
+						tween(frame, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,40)})
+						tween(list, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,0), GroupTransparency = 1})
+						task.wait(0.5)
 						if list then list:Destroy() list = nil end
 						if cfg.Callback then cfg.Callback(opt) end
 					end)
 				end
 				
-				tween(list, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,dropdownHeight), GroupTransparency = 0})
+				tween(list, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,dropdownHeight), GroupTransparency = 0})
 			end)
 			
 			if cfg.Flag then 
@@ -1203,17 +1203,17 @@ function Ssoly:Window(cfg)
 			btn.MouseButton1Click:Connect(function()
 				if open then
 					open = false
-					tween(arrow, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Rotation = 90})
-					tween(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,40)})
-					tween(list, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,0), GroupTransparency = 1})
-					task.wait(0.4)
+					tween(arrow, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Rotation = 90})
+					tween(frame, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,40)})
+					tween(list, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,0), GroupTransparency = 1})
+					task.wait(0.5)
 					if list then list:Destroy() list = nil end
 					return
 					end
 				
 				open = true
-				tween(arrow, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Rotation = -90})
-				tween(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,45 + dropdownHeight)})
+				tween(arrow, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Rotation = -90})
+				tween(frame, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,45 + dropdownHeight)})
 				
 				list = create("CanvasGroup", {
 					Position = UDim2.fromOffset(0,45),
@@ -1310,7 +1310,7 @@ function Ssoly:Window(cfg)
 					end)
 				end
 				
-				tween(list, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,dropdownHeight), GroupTransparency = 0})
+				tween(list, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,dropdownHeight), GroupTransparency = 0})
 			end)
 			
 			if cfg.Flag then Ssoly.Flags[cfg.Flag] = {Type = "MultiDropdown", Get = function() return selected end, Set = function(v) selected = v end} end
@@ -1491,17 +1491,17 @@ function Ssoly:Window(cfg)
 			colorBox.MouseButton1Click:Connect(function()
 				if pickerOpen then
 					pickerOpen = false
-					tween(frame, TweenInfo.new(0.3), {Size = UDim2.new(1,0,0,40)})
+					tween(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,40)})
 					if picker then picker:Destroy() picker = nil end
 					return
 					end
 				
 				pickerOpen = true
-				tween(frame, TweenInfo.new(0.3), {Size = UDim2.new(1,0,0,260)})
+				tween(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,240)})
 				
 				picker = create("Frame", {
 					Position = UDim2.fromOffset(10,50),
-					Size = UDim2.new(1,-20,0,200),
+					Size = UDim2.new(1,-20,0,180),
 					BackgroundTransparency = 1,
 					Parent = frame
 				})
@@ -1511,7 +1511,7 @@ function Ssoly:Window(cfg)
 				local hueBar = create("Frame", {
 					AnchorPoint = Vector2.new(1,0),
 					Position = UDim2.new(1,0,0,0),
-					Size = UDim2.fromOffset(20,160),
+					Size = UDim2.fromOffset(25,140),
 					BackgroundColor3 = Color3.fromRGB(255,255,255),
 					BorderSizePixel = 0,
 					Parent = picker
@@ -1521,7 +1521,7 @@ function Ssoly:Window(cfg)
 				create("UIGradient", {Color = ColorSequence.new({ColorSequenceKeypoint.new(0,Color3.fromRGB(255,0,0)),ColorSequenceKeypoint.new(0.17,Color3.fromRGB(255,255,0)),ColorSequenceKeypoint.new(0.33,Color3.fromRGB(0,255,0)),ColorSequenceKeypoint.new(0.5,Color3.fromRGB(0,255,255)),ColorSequenceKeypoint.new(0.67,Color3.fromRGB(0,0,255)),ColorSequenceKeypoint.new(0.83,Color3.fromRGB(255,0,255)),ColorSequenceKeypoint.new(1,Color3.fromRGB(255,0,0))}), Rotation = 90, Parent = hueBar})
 				
 				local svBox = create("Frame", {
-					Size = UDim2.new(1,-30,1,0),
+					Size = UDim2.new(1,-35,0,140),
 					BackgroundColor3 = Color3.fromHSV(h,1,1),
 					BorderSizePixel = 0,
 					Parent = picker
@@ -1552,23 +1552,24 @@ function Ssoly:Window(cfg)
 				local cursor = create("Frame", {
 					AnchorPoint = Vector2.new(0.5,0.5),
 					Position = UDim2.fromScale(s,1-v),
-					Size = UDim2.fromOffset(10,10),
+					Size = UDim2.fromOffset(14,14),
 					BackgroundColor3 = Color3.fromRGB(255,255,255),
 					BorderSizePixel = 0,
 					Parent = svBox
 				})
 				create("UICorner", {CornerRadius = UDim.new(1,0), Parent = cursor})
-				create("UIStroke", {Color = Color3.fromRGB(0,0,0), Thickness = 2, Parent = cursor})
+				create("UIStroke", {Color = Color3.fromRGB(0,0,0), Thickness = 3, Parent = cursor})
 				
 				local hueIndicator = create("Frame", {
 					AnchorPoint = Vector2.new(0.5,0.5),
 					Position = UDim2.fromScale(0.5,h),
-					Size = UDim2.new(1,0,0,3),
+					Size = UDim2.new(1,2,0,4),
 					BackgroundColor3 = Color3.fromRGB(255,255,255),
 					BorderSizePixel = 0,
 					Parent = hueBar
 				})
-				create("UIStroke", {Color = Color3.fromRGB(0,0,0), Parent = hueIndicator})
+				create("UICorner", {CornerRadius = UDim.new(1,0), Parent = hueIndicator})
+				create("UIStroke", {Color = Color3.fromRGB(0,0,0), Thickness = 2, Parent = hueIndicator})
 				
 				local draggingSV = false
 				local draggingHue = false
@@ -1616,28 +1617,53 @@ function Ssoly:Window(cfg)
 				end)
 				
 				local selectBtn = create("TextButton", {
-					Position = UDim2.fromOffset(0,170),
-					Size = UDim2.new(1,0,0,25),
+					Position = UDim2.fromOffset(0,150),
+					Size = UDim2.new(1,0,0,28),
 					BackgroundColor3 = theme.Accent,
-					Text = "Select",
+					Text = "Select Color",
 					TextColor3 = Color3.fromRGB(255,255,255),
-					TextSize = 13,
+					TextSize = 14,
 					Font = Enum.Font.GothamBold,
 					Parent = picker
 				})
 				
 				create("UICorner", {CornerRadius = UDim.new(0,6), Parent = selectBtn})
 				
+				selectBtn.MouseEnter:Connect(function()
+					tween(selectBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(theme.Accent.R * 255 * 0.8, theme.Accent.G * 255 * 0.8, theme.Accent.B * 255 * 0.8)})
+				end)
+				
+				selectBtn.MouseLeave:Connect(function()
+					tween(selectBtn, TweenInfo.new(0.2), {BackgroundColor3 = theme.Accent})
+				end)
+				
 				selectBtn.MouseButton1Click:Connect(function()
 					pickerOpen = false
-					tween(frame, TweenInfo.new(0.3), {Size = UDim2.new(1,0,0,40)})
+					tween(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,40)})
 					if picker then picker:Destroy() picker = nil end
 				end)
 				end)
 			
-			if cfg.Flag then Ssoly.Flags[cfg.Flag] = {Type = "ColorPicker", Get = function() return currentColor end, Set = function(v) currentColor = v colorBox.BackgroundColor3 = v end} end
+			local colorPickerObj = {}
 			
-			return {Set = function(self, v) currentColor = v colorBox.BackgroundColor3 = v end, Get = function() return currentColor end}
+			function colorPickerObj:Set(v)
+				currentColor = v
+				colorBox.BackgroundColor3 = v
+			end
+			
+			function colorPickerObj:Get()
+				return currentColor
+			end
+			
+			if cfg.Flag then 
+				Ssoly.Flags[cfg.Flag] = {
+					Type = "ColorPicker", 
+					Get = function() return currentColor end, 
+					Set = function(v) colorPickerObj:Set(v) end
+				}
+			end
+			
+			return colorPickerObj
 		end
 		
 		function tab:Label(cfg)
@@ -2143,21 +2169,30 @@ function Ssoly:Window(cfg)
 		
 		main.BackgroundColor3 = theme.BG
 		topbar.BackgroundColor3 = theme.TopBar
+		cornerRepair.BackgroundColor3 = theme.TopBar
 		sidebar.BackgroundColor3 = theme.BG
 		title.TextColor3 = theme.Text
+		searchBox.BackgroundColor3 = theme.Element
+		searchIcon.TextColor3 = theme.TextDim
+		searchInput.TextColor3 = theme.Text
+		searchInput.PlaceholderColor3 = theme.TextDim
+		displayName.TextColor3 = theme.Text
+		username.TextColor3 = theme.TextDim
+		resizeBarBottom.BackgroundColor3 = theme.Accent
+		resizeBarRight.BackgroundColor3 = theme.Accent
 		
-		for _, tab in pairs(tabs) do
-			tab.btn.BackgroundColor3 = theme.Element
-			tab.btn.TextColor3 = theme.Text
+		for _, stroke in ipairs(main:GetDescendants()) do
+			if stroke:IsA("UIStroke") then
+				stroke.Color = theme.Stroke
+			end
 		end
 		
-		if currentTab then
-			for _, child in ipairs(currentTab:GetChildren()) do
-				if child:IsA("Frame") or child:IsA("TextButton") then
-					if child.BackgroundColor3 then
-						child.BackgroundColor3 = theme.Element
-					end
-				end
+		for _, tab in pairs(tabs) do
+			if tab.btn.BackgroundColor3 == theme.Accent or tab == tabs[1] then
+				tab.btn.BackgroundColor3 = theme.Accent
+				tab.indicator.BackgroundColor3 = theme.Accent
+			else
+				tab.btn.BackgroundColor3 = theme.Element
 			end
 		end
 	end
