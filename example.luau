@@ -416,6 +416,168 @@ Settings:Divider()
 
 Settings:Paragraph({
 	Header = "Keybinds",
+	Body = "Press RightControl to toggle the UI. You can change this keybind using Window:SetKeybind(key)."
+})
+
+-- ═══════════════════════════════════════════════════════════
+-- TAB 7: ADVANCED - Продвинутые функции
+-- ═══════════════════════════════════════════════════════════
+local Advanced = Window:Tab({Name = "Advanced", Icon = 7734068321})
+
+Advanced:Header({Text = "Dynamic Dropdowns"})
+
+Advanced:Paragraph({
+	Header = "Refresh Method Demo",
+	Body = "Dropdowns can be dynamically updated using the :Refresh() method. Click the buttons below to see it in action!"
+})
+
+local playerDropdown = Advanced:Dropdown({
+	Name = "Select Player",
+	Options = {"Loading..."},
+	Default = "Loading...",
+	Callback = function(v)
+		print("Selected player:", v)
+	end
+})
+
+Advanced:Button({
+	Name = "Refresh Player List",
+	Callback = function()
+		local players = {}
+		for _, player in ipairs(game.Players:GetPlayers()) do
+			table.insert(players, player.Name)
+		end
+		playerDropdown:Refresh(players)
+		Window:Notify({
+			Title = "Refreshed",
+			Description = "Player list updated with " .. #players .. " players!",
+			Lifetime = 2
+		})
+	end
+})
+
+Advanced:Divider()
+
+Advanced:Header({Text = "Multi-Select Refresh"})
+
+local itemMulti = Advanced:MultiDropdown({
+	Name = "Select Items",
+	Options = {"Item 1", "Item 2", "Item 3"},
+	Default = {},
+	Callback = function(selected)
+		print("Selected items:", table.concat(selected, ", "))
+	end
+})
+
+Advanced:Button({
+	Name = "Add More Items",
+	Callback = function()
+		local newItems = {"Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6"}
+		itemMulti:Refresh(newItems)
+		Window:Notify({
+			Title = "Updated",
+			Description = "Item list expanded to " .. #newItems .. " items!",
+			Lifetime = 2
+		})
+	end
+})
+
+Advanced:Button({
+	Name = "Reset Items",
+	Callback = function()
+		itemMulti:Refresh({"Item 1", "Item 2", "Item 3"})
+		Window:Notify({
+			Title = "Reset",
+			Description = "Item list reset to default!",
+			Lifetime = 2
+		})
+	end
+})
+
+Advanced:Divider()
+
+Advanced:Header({Text = "Collapsible Sections"})
+
+local CollapsedSection = Advanced:Section({Name = "Collapsed by Default", Collapsed = true})
+
+CollapsedSection:Label({Text = "This section starts collapsed!"})
+CollapsedSection:Toggle({
+	Name = "Hidden Toggle",
+	Default = false,
+	Callback = function(v)
+		print("Hidden toggle:", v)
+	end
+})
+
+local OpenSection = Advanced:Section({Name = "Open by Default", Collapsed = false})
+
+OpenSection:Label({Text = "This section starts open!"})
+OpenSection:Slider({
+	Name = "Hidden Slider",
+	Min = 0,
+	Max = 100,
+	Default = 50,
+	Callback = function(v)
+		print("Hidden slider:", v)
+	end
+})
+
+-- ═══════════════════════════════════════════════════════════
+-- WELCOME NOTIFICATION
+-- ═══════════════════════════════════════════════════════════
+Window:Notify({
+	Title = "Welcome to Ssoly UI!",
+	Description = "All features loaded successfully. Press RightControl to toggle the menu.",
+	Style = "Confirm",
+	Lifetime = 5
+})
+
+-- ═══════════════════════════════════════════════════════════
+-- FLAGS DEMONSTRATION
+-- ═══════════════════════════════════════════════════════════
+task.wait(2)
+print("═══════════════════════════════════════")
+print("Ssoly UI - Flags Demo")
+print("═══════════════════════════════════════")
+if Ssoly.Flags.WeaponType then
+	print("Current weapon:", Ssoly.Flags.WeaponType.Get())
+end
+if Ssoly.Flags.FarmSpeed then
+	print("Farm speed:", Ssoly.Flags.FarmSpeed.Get())
+end
+if Ssoly.Flags.AutoFarm then
+	print("Auto farm enabled:", Ssoly.Flags.AutoFarm.Get())
+end
+print("═══════════════════════════════════════")
+print("")
+print("Features Showcase:")
+print("✓ Active tab indicator")
+print("✓ Larger notifications")
+print("✓ Smooth toggle animations")
+print("✓ ColorPicker with Select button")
+print("✓ Slower dropdown animations")
+print("✓ Animated section collapse")
+print("✓ Resize handles on hover")
+print("✓ Bigger slider for easier use")
+print("✓ Dropdown/MultiDropdown :Refresh()")
+print("✓ Auto-save configurations")
+print("✓ Search functionality")
+print("✓ Loading screen")
+print("═══════════════════════════════════════")tion()
+		Window:LoadConfig()
+		Window:Notify({
+			Title = "Loaded",
+			Description = "Configuration loaded successfully!",
+			Style = "Confirm",
+			Lifetime = 2
+		})
+	end
+})
+
+Settings:Divider()
+
+Settings:Paragraph({
+	Header = "Keybinds",
 	Body = "Press RightControl to toggle the UI. You can change this keybind in the window settings using Window:SetKeybind(key)."
 })
 
