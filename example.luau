@@ -1,604 +1,402 @@
--- Ssoly UI - Complete Example
--- Загрузка библиотеки
 local Ssoly = loadstring(game:HttpGet("https://raw.githubusercontent.com/asdkfnjkhzxoiuiou34341/ssoly-ui/refs/heads/main/Ssoly.luau"))()
 
--- Создание окна со всеми настройками
 local Window = Ssoly:Window({
-	Title = "Ssoly UI - Showcase",
-	Size = UDim2.fromOffset(780, 580),
+	Title = "Ssoly UI - Full Demo",
 	Theme = "Dark",
-	AcrylicBlur = true,
-	Blur = true,
+	Size = UDim2.fromOffset(750, 550),
 	Keybind = Enum.KeyCode.RightControl,
+	LoadingScreen = true,
+	Blur = true,
+	AcrylicBlur = true,
 	AutoSave = true,
-	ConfigName = "ssoly_config",
-	LoadingScreen = true
+	ConfigName = "demo_config"
 })
 
--- ═══════════════════════════════════════════════════════════
--- TAB 1: HOME - Основные функции
--- ═══════════════════════════════════════════════════════════
-local Home = Window:Tab({Name = "Home", Icon = 7733964370})
+-- Tab 1: Основные элементы
+local MainTab = Window:Tab({Name = "Main", Icon = "7733955511"})
 
-Home:Paragraph({
-	Header = "Welcome to Ssoly UI!",
-	Body = "Modern UI library with smooth animations, auto-save configs, color pickers, multi-select dropdowns, collapsible sections, and search functionality."
+MainTab:Header({Text = "Основные элементы"})
+MainTab:Paragraph({Header = "Добро пожаловать!", Body = "Это полная демонстрация всех возможностей библиотеки Ssoly UI."})
+
+MainTab:Button({
+	Name = "Простая кнопка",
+	Callback = function()
+		Window:Notify({Title = "Кнопка", Description = "Вы нажали на кнопку!", Lifetime = 2})
+	end
 })
 
-Home:Divider()
-
-local CombatSection = Home:Section({Name = "Combat Features", Collapsed = false})
-
-CombatSection:Toggle({
-	Name = "Auto Farm",
+local toggle = MainTab:Toggle({
+	Name = "Переключатель",
 	Default = false,
-	Flag = "AutoFarm",
-	Callback = function(v)
-		print("Auto Farm:", v)
+	Flag = "MainToggle",
+	Callback = function(state)
+		print("Toggle:", state)
 	end
 })
 
-CombatSection:Toggle({
-	Name = "Auto Collect Coins",
-	Default = true,
-	Callback = function(v)
-		print("Auto Collect:", v)
-	end
-})
-
-CombatSection:Slider({
-	Name = "Farm Speed",
-	Min = 1,
-	Max = 100,
-	Default = 50,
-	Flag = "FarmSpeed",
-	Callback = function(v)
-		print("Speed:", v)
-	end
-})
-
-local ActionsSection = Home:Section({Name = "Quick Actions", Collapsed = false})
-
-ActionsSection:Button({
-	Name = "Teleport to Spawn",
-	Callback = function()
-		Window:Notify({
-			Title = "Teleported!",
-			Description = "You have been teleported to spawn point.",
-			Style = "Confirm",
-			Lifetime = 2
-		})
-	end
-})
-
-ActionsSection:Button({
-	Name = "Reset Character",
-	Callback = function()
-		Window:Dialog({
-			Title = "Confirm Action",
-			Description = "Are you sure you want to reset your character?",
-			Buttons = {
-				{Name = "Yes", Callback = function() 
-					print("Character reset")
-					Window:Notify({Title = "Reset", Description = "Character has been reset.", Lifetime = 2})
-				end},
-				{Name = "Cancel"}
-			}
-		})
-	end
-})
-
--- ═══════════════════════════════════════════════════════════
--- TAB 2: PLAYER - Настройки персонажа
--- ═══════════════════════════════════════════════════════════
-local Player = Window:Tab({Name = "Player", Icon = 7733955511})
-
-local MovementSection = Player:Section({Name = "Movement", Collapsed = false})
-
-MovementSection:Slider({
-	Name = "Walk Speed",
-	Min = 16,
-	Max = 200,
-	Default = 16,
-	Callback = function(v)
-		game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = v
-	end
-})
-
-MovementSection:Slider({
-	Name = "Jump Power",
-	Min = 50,
-	Max = 300,
-	Default = 50,
-	Callback = function(v)
-		game.Players.LocalPlayer.Character.Humanoid.JumpPower = v
-	end
-})
-
-MovementSection:Toggle({
-	Name = "Infinite Jump",
-	Default = false,
-	Callback = function(v)
-		print("Infinite Jump:", v)
-	end
-})
-
-local KeybindsSection = Player:Section({Name = "Keybinds", Collapsed = false})
-
-KeybindsSection:Keybind({
-	Name = "Toggle ESP",
-	Default = Enum.KeyCode.E,
-	OnPress = function()
-		Window:Notify({Title = "ESP", Description = "ESP toggled!", Lifetime = 1})
-	end
-})
-
-KeybindsSection:Keybind({
-	Name = "Fly Mode",
-	Default = Enum.KeyCode.F,
-	OnPress = function()
-		Window:Notify({Title = "Fly", Description = "Fly mode activated!", Lifetime = 1})
-	end
-})
-
-KeybindsSection:Keybind({
-	Name = "Noclip",
-	Default = Enum.KeyCode.N,
-	OnPress = function()
-		Window:Notify({Title = "Noclip", Description = "Noclip toggled!", Lifetime = 1})
-	end
-})
-
--- ═══════════════════════════════════════════════════════════
--- TAB 3: COMBAT - Боевые настройки
--- ═══════════════════════════════════════════════════════════
-local Combat = Window:Tab({Name = "Combat", Icon = 7734000129})
-
-Combat:Header({Text = "Weapon Configuration"})
-
-Combat:Dropdown({
-	Name = "Weapon Type",
-	Options = {"Sword", "Gun", "Bow", "Magic Staff", "Axe", "Spear"},
-	Default = "Sword",
-	Flag = "WeaponType",
-	Callback = function(v)
-		print("Selected weapon:", v)
-	end
-})
-
-Combat:Dropdown({
-	Name = "Target Priority",
-	Options = {"Nearest", "Lowest HP", "Highest Level", "Random", "Strongest"},
-	Default = "Nearest",
-	Callback = function(v)
-		print("Target priority:", v)
-	end
-})
-
-Combat:Divider()
-
-Combat:Header({Text = "Combat Settings"})
-
-Combat:Toggle({
-	Name = "Auto Attack",
-	Default = false,
-	Callback = function(v)
-		print("Auto Attack:", v)
-	end
-})
-
-Combat:Toggle({
-	Name = "Auto Block",
-	Default = false,
-	Callback = function(v)
-		print("Auto Block:", v)
-	end
-})
-
-Combat:Slider({
-	Name = "Attack Range",
-	Min = 10,
-	Max = 100,
-	Default = 30,
-	Callback = function(v)
-		print("Range:", v)
-	end
-})
-
-Combat:Slider({
-	Name = "Attack Speed",
-	Min = 1,
-	Max = 10,
-	Default = 5,
-	Callback = function(v)
-		print("Attack Speed:", v)
-	end
-})
-
--- ═══════════════════════════════════════════════════════════
--- TAB 4: VISUALS - Визуальные настройки
--- ═══════════════════════════════════════════════════════════
-local Visuals = Window:Tab({Name = "Visuals", Icon = 7734053495})
-
-Visuals:Header({Text = "ESP Settings"})
-
-Visuals:MultiDropdown({
-	Name = "ESP Elements",
-	Options = {"Players", "NPCs", "Items", "Chests", "Vehicles"},
-	Default = {"Players"},
-	Callback = function(selected)
-		print("ESP Elements:", table.concat(selected, ", "))
-	end
-})
-
-Visuals:ColorPicker({
-	Name = "ESP Color",
-	Default = Color3.fromRGB(255, 100, 100),
-	Callback = function(color)
-		print("ESP Color:", color)
-	end
-})
-
-Visuals:Divider()
-
-Visuals:Header({Text = "UI Customization"})
-
-Visuals:ColorPicker({
-	Name = "Accent Color",
-	Default = Color3.fromRGB(88, 101, 242),
-	Callback = function(color)
-		print("Accent Color:", color)
-	end
-})
-
-Visuals:ColorPicker({
-	Name = "Background Color",
-	Default = Color3.fromRGB(18, 18, 22),
-	Callback = function(color)
-		print("Background Color:", color)
-	end
-})
-
--- ═══════════════════════════════════════════════════════════
--- TAB 5: MISC - Разное
--- ═══════════════════════════════════════════════════════════
-local Misc = Window:Tab({Name = "Misc", Icon = 7734068321})
-
-Misc:Header({Text = "Input Fields"})
-
-Misc:Input({
-	Name = "Custom Message",
-	Placeholder = "Enter your message...",
-	Default = "Hello World!",
-	Callback = function(v)
-		print("Message:", v)
-	end
-})
-
-Misc:Input({
-	Name = "Player Name",
-	Placeholder = "Enter player name...",
-	Callback = function(v)
-		print("Target player:", v)
-	end
-})
-
-Misc:Divider()
-
-Misc:Header({Text = "Information"})
-
-Misc:Label({Text = "Version: 2.0.0"})
-Misc:Label({Text = "Made with ❤️ by Ssoly"})
-Misc:Label({Text = "Discord: discord.gg/ssoly"})
-
-Misc:Divider()
-
-Misc:Paragraph({
-	Header = "About Ssoly UI",
-	Body = "Ssoly UI is a modern, feature-rich UI library for Roblox. It includes smooth animations, auto-save configurations, color pickers, multi-select dropdowns, collapsible sections, search functionality, and much more!"
-})
-
--- ═══════════════════════════════════════════════════════════
--- TAB 6: SETTINGS - Настройки UI
--- ═══════════════════════════════════════════════════════════
-local Settings = Window:Tab({Name = "Settings", Icon = 7734068321})
-
-Settings:Header({Text = "Theme Configuration"})
-
-Settings:Dropdown({
-	Name = "Theme",
-	Options = {"Dark", "Light", "Ocean", "Amber", "Green", "Purple"},
-	Default = "Dark",
-	Callback = function(v)
-		Window:SetTheme(v)
-		Window:Notify({
-			Title = "Theme Changed",
-			Description = "Theme set to " .. v,
-			Style = "Confirm",
-			Lifetime = 2
-		})
-	end
-})
-
-Settings:Toggle({
-	Name = "Acrylic Blur",
-	Default = true,
-	Callback = function(v)
-		Window:SetAcrylicBlur(v)
-	end
-})
-
-Settings:Toggle({
-	Name = "Background Blur",
-	Default = true,
-	Callback = function(v)
-		print("Background Blur:", v)
-	end
-})
-
-Settings:Divider()
-
-Settings:Header({Text = "Notifications"})
-
-Settings:Button({
-	Name = "Test Notification",
-	Callback = function()
-		Window:Notify({
-			Title = "Test",
-			Description = "This is a test notification!",
-			Lifetime = 3
-		})
-	end
-})
-
-Settings:Button({
-	Name = "Success Notification",
-	Callback = function()
-		Window:Notify({
-			Title = "Success!",
-			Description = "Operation completed successfully!",
-			Style = "Confirm",
-			Lifetime = 3
-		})
-	end
-})
-
-Settings:Button({
-	Name = "Show Dialog",
-	Callback = function()
-		Window:Dialog({
-			Title = "Example Dialog",
-			Description = "This is an example dialog with multiple buttons.",
-			Buttons = {
-				{Name = "Option 1", Callback = function() 
-					print("Option 1 selected")
-				end},
-				{Name = "Option 2", Callback = function() 
-					print("Option 2 selected")
-				end},
-				{Name = "Cancel"}
-			}
-		})
-	end
-})
-
-Settings:Divider()
-
-Settings:Header({Text = "Configuration"})
-
-Settings:Button({
-	Name = "Save Config",
-	Callback = function()
-		Window:SaveConfig()
-		Window:Notify({
-			Title = "Saved",
-			Description = "Configuration saved successfully!",
-			Style = "Confirm",
-			Lifetime = 2
-		})
-	end
-})
-
-Settings:Button({
-	Name = "Load Config",
-	Callback = function()
-		Window:LoadConfig()
-		Window:Notify({
-			Title = "Loaded",
-			Description = "Configuration loaded successfully!",
-			Style = "Confirm",
-			Lifetime = 2
-		})
-	end
-})
-
-Settings:Divider()
-
-Settings:Paragraph({
-	Header = "Keybinds",
-	Body = "Press RightControl to toggle the UI. You can change this keybind using Window:SetKeybind(key)."
-})
-
--- ═══════════════════════════════════════════════════════════
--- TAB 7: ADVANCED - Продвинутые функции
--- ═══════════════════════════════════════════════════════════
-local Advanced = Window:Tab({Name = "Advanced", Icon = 7734068321})
-
-Advanced:Header({Text = "Dynamic Dropdowns"})
-
-Advanced:Paragraph({
-	Header = "Refresh Method Demo",
-	Body = "Dropdowns can be dynamically updated using the :Refresh() method. Click the buttons below to see it in action!"
-})
-
-local playerDropdown = Advanced:Dropdown({
-	Name = "Select Player",
-	Options = {"Loading..."},
-	Default = "Loading...",
-	Callback = function(v)
-		print("Selected player:", v)
-	end
-})
-
-Advanced:Button({
-	Name = "Refresh Player List",
-	Callback = function()
-		local players = {}
-		for _, player in ipairs(game.Players:GetPlayers()) do
-			table.insert(players, player.Name)
-		end
-		playerDropdown:Refresh(players)
-		Window:Notify({
-			Title = "Refreshed",
-			Description = "Player list updated with " .. #players .. " players!",
-			Lifetime = 2
-		})
-	end
-})
-
-Advanced:Divider()
-
-Advanced:Header({Text = "Multi-Select Refresh"})
-
-local itemMulti = Advanced:MultiDropdown({
-	Name = "Select Items",
-	Options = {"Item 1", "Item 2", "Item 3"},
-	Default = {},
-	Callback = function(selected)
-		print("Selected items:", table.concat(selected, ", "))
-	end
-})
-
-Advanced:Button({
-	Name = "Add More Items",
-	Callback = function()
-		local newItems = {"Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6"}
-		itemMulti:Refresh(newItems)
-		Window:Notify({
-			Title = "Updated",
-			Description = "Item list expanded to " .. #newItems .. " items!",
-			Lifetime = 2
-		})
-	end
-})
-
-Advanced:Button({
-	Name = "Reset Items",
-	Callback = function()
-		itemMulti:Refresh({"Item 1", "Item 2", "Item 3"})
-		Window:Notify({
-			Title = "Reset",
-			Description = "Item list reset to default!",
-			Lifetime = 2
-		})
-	end
-})
-
-Advanced:Divider()
-
-Advanced:Header({Text = "Collapsible Sections"})
-
-local CollapsedSection = Advanced:Section({Name = "Collapsed by Default", Collapsed = true})
-
-CollapsedSection:Label({Text = "This section starts collapsed!"})
-CollapsedSection:Toggle({
-	Name = "Hidden Toggle",
-	Default = false,
-	Callback = function(v)
-		print("Hidden toggle:", v)
-	end
-})
-
-local OpenSection = Advanced:Section({Name = "Open by Default", Collapsed = false})
-
-OpenSection:Label({Text = "This section starts open!"})
-OpenSection:Slider({
-	Name = "Hidden Slider",
+local slider = MainTab:Slider({
+	Name = "Слайдер",
 	Min = 0,
 	Max = 100,
 	Default = 50,
-	Callback = function(v)
-		print("Hidden slider:", v)
+	Flag = "MainSlider",
+	Callback = function(value)
+		print("Slider:", value)
 	end
 })
 
--- ═══════════════════════════════════════════════════════════
--- WELCOME NOTIFICATION
--- ═══════════════════════════════════════════════════════════
-Window:Notify({
-	Title = "Welcome to Ssoly UI!",
-	Description = "All features loaded successfully. Press RightControl to toggle the menu.",
-	Style = "Confirm",
-	Lifetime = 5
+MainTab:Divider()
+
+local dropdown = MainTab:Dropdown({
+	Name = "Выпадающий список",
+	Options = {"Опция 1", "Опция 2", "Опция 3", "Опция 4"},
+	Default = "Опция 1",
+	Flag = "MainDropdown",
+	Callback = function(option)
+		print("Dropdown:", option)
+	end
 })
 
--- ═══════════════════════════════════════════════════════════
--- FLAGS DEMONSTRATION
--- ═══════════════════════════════════════════════════════════
-task.wait(2)
-print("═══════════════════════════════════════")
-print("Ssoly UI - Flags Demo")
-print("═══════════════════════════════════════")
-if Ssoly.Flags.WeaponType then
-	print("Current weapon:", Ssoly.Flags.WeaponType.Get())
-end
-if Ssoly.Flags.FarmSpeed then
-	print("Farm speed:", Ssoly.Flags.FarmSpeed.Get())
-end
-if Ssoly.Flags.AutoFarm then
-	print("Auto farm enabled:", Ssoly.Flags.AutoFarm.Get())
-end
-print("═══════════════════════════════════════")
-print("")
-print("Features Showcase:")
-print("✓ Active tab indicator")
-print("✓ Larger notifications")
-print("✓ Smooth toggle animations")
-print("✓ ColorPicker with Select button")
-print("✓ Slower dropdown animations")
-print("✓ Animated section collapse")
-print("✓ Resize handles on hover")
-print("✓ Bigger slider for easier use")
-print("✓ Dropdown/MultiDropdown :Refresh()")
-print("✓ Auto-save configurations")
-print("✓ Search functionality")
-print("✓ Loading screen")
-print("═══════════════════════════════════════")tion()
-		Window:LoadConfig()
+local multiDropdown = MainTab:MultiDropdown({
+	Name = "Множественный выбор",
+	Options = {"Вариант A", "Вариант B", "Вариант C", "Вариант D"},
+	Default = {"Вариант A"},
+	Flag = "MainMultiDropdown",
+	Callback = function(selected)
+		print("MultiDropdown:", table.concat(selected, ", "))
+	end
+})
+
+-- Tab 2: Ввод данных
+local InputTab = Window:Tab({Name = "Input", Icon = "7733964126"})
+
+InputTab:Header({Text = "Элементы ввода"})
+
+local input = InputTab:Input({
+	Name = "Текстовое поле",
+	Placeholder = "Введите текст...",
+	Default = "",
+	Flag = "MainInput",
+	Callback = function(text)
+		print("Input:", text)
+	end
+})
+
+local keybind = InputTab:Keybind({
+	Name = "Горячая клавиша",
+	Default = Enum.KeyCode.E,
+	Flag = "MainKeybind",
+	Callback = function(key)
+		print("Keybind changed:", key.Name)
+	end,
+	OnPress = function()
+		Window:Notify({Title = "Keybind", Description = "Горячая клавиша нажата!", Lifetime = 1})
+	end
+})
+
+InputTab:Divider()
+
+local colorPicker = InputTab:ColorPicker({
+	Name = "Выбор цвета",
+	Default = Color3.fromRGB(88, 101, 242),
+	Flag = "MainColor",
+	Callback = function(color)
+		print("Color:", color)
+	end
+})
+
+local label = InputTab:Label({Text = "Это обычный текст"})
+
+task.spawn(function()
+	local counter = 0
+	while task.wait(1) do
+		counter = counter + 1
+		label:Set("Счётчик: " .. counter)
+	end
+end)
+
+-- Tab 3: Секции
+local SectionTab = Window:Tab({Name = "Sections", Icon = "7733920644"})
+
+SectionTab:Header({Text = "Секции и группировка"})
+
+local Section1 = SectionTab:Section({Name = "Секция 1", Collapsed = false})
+
+Section1:Toggle({
+	Name = "Опция в секции 1",
+	Default = true,
+	Callback = function(state)
+		print("Section1 Toggle:", state)
+	end
+})
+
+Section1:Slider({
+	Name = "Слайдер в секции",
+	Min = 1,
+	Max = 10,
+	Default = 5,
+	Callback = function(value)
+		print("Section1 Slider:", value)
+	end
+})
+
+local Section2 = SectionTab:Section({Name = "Секция 2 (Свёрнута)", Collapsed = true})
+
+Section2:Button({
+	Name = "Кнопка в секции 2",
+	Callback = function()
+		print("Section2 Button clicked")
+	end
+})
+
+Section2:Input({
+	Name = "Ввод в секции",
+	Placeholder = "Текст...",
+	Callback = function(text)
+		print("Section2 Input:", text)
+	end
+})
+
+Section2:ColorPicker({
+	Name = "Цвет в секции",
+	Default = Color3.fromRGB(255, 100, 100),
+	Callback = function(color)
+		print("Section2 Color:", color)
+	end
+})
+
+-- Tab 4: Уведомления и диалоги
+local NotifyTab = Window:Tab({Name = "Notifications", Icon = "7733992358"})
+
+NotifyTab:Header({Text = "Уведомления и диалоги"})
+
+NotifyTab:Button({
+	Name = "Простое уведомление",
+	Callback = function()
 		Window:Notify({
-			Title = "Loaded",
-			Description = "Configuration loaded successfully!",
-			Style = "Confirm",
-			Lifetime = 2
+			Title = "Информация",
+			Description = "Это простое уведомление",
+			Lifetime = 3
 		})
 	end
 })
 
-Settings:Divider()
-
-Settings:Paragraph({
-	Header = "Keybinds",
-	Body = "Press RightControl to toggle the UI. You can change this keybind in the window settings using Window:SetKeybind(key)."
+NotifyTab:Button({
+	Name = "Уведомление с подтверждением",
+	Callback = function()
+		Window:Notify({
+			Title = "Подтверждение",
+			Description = "Нажмите галочку для подтверждения",
+			Style = "Confirm",
+			Lifetime = 0,
+			Callback = function()
+				print("Confirmed!")
+			end
+		})
+	end
 })
 
--- ═══════════════════════════════════════════════════════════
--- WELCOME NOTIFICATION
--- ═══════════════════════════════════════════════════════════
+NotifyTab:Button({
+	Name = "Уведомление с отменой",
+	Callback = function()
+		Window:Notify({
+			Title = "Предупреждение",
+			Description = "Нажмите крестик для отмены",
+			Style = "Cancel",
+			Lifetime = 0,
+			Callback = function()
+				print("Cancelled!")
+			end
+		})
+	end
+})
+
+NotifyTab:Divider()
+
+NotifyTab:Button({
+	Name = "Диалоговое окно",
+	Callback = function()
+		Window:Dialog({
+			Title = "Подтверждение действия",
+			Description = "Вы уверены, что хотите продолжить?",
+			Buttons = {
+				{
+					Name = "Да",
+					Callback = function()
+						Window:Notify({Title = "Успех", Description = "Действие выполнено!", Lifetime = 2})
+					end
+				},
+				{
+					Name = "Нет",
+					Callback = function()
+						Window:Notify({Title = "Отмена", Description = "Действие отменено", Lifetime = 2})
+					end
+				}
+			}
+		})
+	end
+})
+
+NotifyTab:Button({
+	Name = "Множественный выбор",
+	Callback = function()
+		Window:Dialog({
+			Title = "Выберите действие",
+			Description = "Что вы хотите сделать?",
+			Buttons = {
+				{Name = "Сохранить", Callback = function() print("Save") end},
+				{Name = "Загрузить", Callback = function() print("Load") end},
+				{Name = "Удалить", Callback = function() print("Delete") end},
+				{Name = "Отмена", Callback = function() print("Cancel") end}
+			}
+		})
+	end
+})
+
+-- Tab 5: Настройки
+local SettingsTab = Window:Tab({Name = "Settings", Icon = "7734053495"})
+
+SettingsTab:Header({Text = "Настройки интерфейса"})
+
+SettingsTab:Paragraph({
+	Header = "Темы оформления",
+	Body = "Выберите тему для изменения внешнего вида интерфейса"
+})
+
+local themeDropdown = SettingsTab:Dropdown({
+	Name = "Тема",
+	Options = {"Dark", "Light", "Ocean", "Amber", "Green", "Purple"},
+	Default = "Dark",
+	Callback = function(theme)
+		Window:SetTheme(theme)
+	end
+})
+
+SettingsTab:Divider()
+
+SettingsTab:Toggle({
+	Name = "Acrylic Blur",
+	Default = true,
+	Callback = function(state)
+		Window:SetAcrylicBlur(state)
+	end
+})
+
+SettingsTab:Keybind({
+	Name = "Горячая клавиша меню",
+	Default = Enum.KeyCode.RightControl,
+	Callback = function(key)
+		Window:SetKeybind(key)
+	end
+})
+
+SettingsTab:Divider()
+
+SettingsTab:Button({
+	Name = "Сохранить конфигурацию",
+	Callback = function()
+		local success = Window:SaveConfig()
+		if success then
+			Window:Notify({Title = "Успех", Description = "Конфигурация сохранена!", Lifetime = 2})
+		else
+			Window:Notify({Title = "Ошибка", Description = "Не удалось сохранить", Lifetime = 2})
+		end
+	end
+})
+
+SettingsTab:Button({
+	Name = "Загрузить конфигурацию",
+	Callback = function()
+		local success = Window:LoadConfig()
+		if success then
+			Window:Notify({Title = "Успех", Description = "Конфигурация загружена!", Lifetime = 2})
+		else
+			Window:Notify({Title = "Ошибка", Description = "Не удалось загрузить", Lifetime = 2})
+		end
+	end
+})
+
+-- Tab 6: Продвинутые функции
+local AdvancedTab = Window:Tab({Name = "Advanced", Icon = "7734068321"})
+
+AdvancedTab:Header({Text = "Продвинутые возможности"})
+
+AdvancedTab:Paragraph({
+	Header = "Работа с флагами",
+	Body = "Флаги позволяют получать и устанавливать значения элементов программно"
+})
+
+AdvancedTab:Button({
+	Name = "Получить значения флагов",
+	Callback = function()
+		print("=== Значения флагов ===")
+		for flag, data in pairs(Ssoly.Flags) do
+			print(flag .. ":", data.Get())
+		end
+	end
+})
+
+AdvancedTab:Button({
+	Name = "Установить случайные значения",
+	Callback = function()
+		toggle:Set(math.random() > 0.5)
+		slider:Set(math.random(0, 100))
+		dropdown:Set({"Опция 1", "Опция 2", "Опция 3", "Опция 4"}[math.random(1, 4)])
+		colorPicker:Set(Color3.fromRGB(math.random(0, 255), math.random(0, 255), math.random(0, 255)))
+		Window:Notify({Title = "Готово", Description = "Значения изменены!", Lifetime = 2})
+	end
+})
+
+AdvancedTab:Divider()
+
+AdvancedTab:Button({
+	Name = "Обновить опции Dropdown",
+	Callback = function()
+		dropdown:Refresh({"Новая 1", "Новая 2", "Новая 3"})
+		Window:Notify({Title = "Обновлено", Description = "Список опций изменён", Lifetime = 2})
+	end
+})
+
+AdvancedTab:Button({
+	Name = "Получить выбранные элементы",
+	Callback = function()
+		local selected = multiDropdown:Get()
+		Window:Notify({
+			Title = "Выбрано",
+			Description = #selected > 0 and table.concat(selected, ", ") or "Ничего",
+			Lifetime = 3
+		})
+	end
+})
+
+AdvancedTab:Divider()
+
+AdvancedTab:Button({
+	Name = "Скрыть/Показать окно",
+	Callback = function()
+		Window:Toggle()
+	end
+})
+
+AdvancedTab:Button({
+	Name = "Изменить размер окна",
+	Callback = function()
+		local sizes = {
+			UDim2.fromOffset(600, 450),
+			UDim2.fromOffset(800, 600),
+			UDim2.fromOffset(900, 650)
+		}
+		Window:SetSize(sizes[math.random(1, #sizes)])
+	end
+})
+
+-- Приветственное уведомление
 Window:Notify({
-	Title = "Welcome to Ssoly UI!",
-	Description = "All features loaded. Press RightControl to toggle.",
-	Style = "Confirm",
-	Lifetime = 5
+	Title = "Добро пожаловать!",
+	Description = "Ssoly UI загружен. Исследуйте все возможности библиотеки!",
+	Lifetime = 4
 })
 
--- ═══════════════════════════════════════════════════════════
--- FLAGS DEMONSTRATION
--- ═══════════════════════════════════════════════════════════
-task.wait(2)
-print("═══════════════════════════════════════")
-print("Ssoly UI - Flags Demo")
-print("═══════════════════════════════════════")
-print("Current weapon:", Ssoly.Flags.WeaponType.Get())
-print("Farm speed:", Ssoly.Flags.FarmSpeed.Get())
-print("Auto farm enabled:", Ssoly.Flags.AutoFarm.Get())
-print("═══════════════════════════════════════")
+print("Ssoly UI Demo загружен!")
+print("Горячая клавиша:", Window:GetKeybind().Name)
+print("Текущая тема:", Window:GetTheme())
