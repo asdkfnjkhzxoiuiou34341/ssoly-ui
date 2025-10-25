@@ -1,6 +1,6 @@
 -- Ssoly UI - Complete Example
 -- Загрузка библиотеки
-local Ssoly = loadstring(game:HttpGet("https://raw.githubusercontent.com/your-repo/ssoly-ui/main/fusion.luau"))()
+local Ssoly = loadstring(game:HttpGet("https://raw.githubusercontent.com/asdkfnjkhzxoiuiou34341/ssoly-ui/refs/heads/main/Ssoly.luau"))()
 
 -- Создание окна со всеми настройками
 local Window = Ssoly:Window({
