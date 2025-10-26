@@ -464,7 +464,7 @@ function Ssoly:Window(cfg)
 		Parent = userInfo
 	})
 	
-	create("UIPadding", {PaddingLeft = UDim.new(0,12), PaddingBottom = UDim.new(0,10), Parent = userInfoContent})
+	create("UIPadding", {PaddingLeft = UDim.new(0,18), PaddingBottom = UDim.new(0,10), Parent = userInfoContent})
 	create("UIListLayout", {Padding = UDim.new(0,8), FillDirection = Enum.FillDirection.Horizontal, VerticalAlignment = Enum.VerticalAlignment.Center, Parent = userInfoContent})
 	
 	local userId = Player.UserId
@@ -551,20 +551,6 @@ function Ssoly:Window(cfg)
 		Parent = searchBox
 	})
 	
-	local tabList = create("ScrollingFrame", {
-		Position = UDim2.fromOffset(0,52),
-		Size = UDim2.new(1,0,1,-112),
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		ScrollBarThickness = 4,
-		CanvasSize = UDim2.fromScale(1,0),
-		AutomaticCanvasSize = Enum.AutomaticSize.Y,
-		Parent = sidebar
-	})
-	
-	create("UIListLayout", {Padding = UDim.new(0,5), Parent = tabList})
-	create("UIPadding", {PaddingTop = UDim.new(0,10), PaddingLeft = UDim.new(0,10), PaddingRight = UDim.new(0,10), PaddingBottom = UDim.new(0,10), Parent = tabList})
-	
 	local content = create("Frame", {
 		Name = "Content",
 		AnchorPoint = Vector2.new(1,0),
@@ -573,6 +559,28 @@ function Ssoly:Window(cfg)
 		BackgroundTransparency = 1,
 		Parent = main
 	})
+	
+	local tabList = create("ScrollingFrame", {
+		Position = UDim2.fromOffset(0,52),
+		Size = UDim2.new(1,0,1,-112),
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		ScrollBarThickness = 0,
+		CanvasSize = UDim2.fromScale(1,0),
+		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+		Parent = sidebar
+	})
+	
+	tabList:GetPropertyChangedSignal("CanvasSize"):Connect(function()
+		if tabList.CanvasSize.Y.Offset > tabList.AbsoluteSize.Y then
+			tabList.ScrollBarThickness = 4
+		else
+			tabList.ScrollBarThickness = 0
+		end
+	end)
+	
+	create("UIListLayout", {Padding = UDim.new(0,5), Parent = tabList})
+	create("UIPadding", {PaddingTop = UDim.new(0,10), PaddingLeft = UDim.new(0,10), PaddingRight = UDim.new(0,10), PaddingBottom = UDim.new(0,10), Parent = tabList})
 	
 	local notifs = create("ScrollingFrame", {
 		Name = "Notifs",
@@ -614,36 +622,42 @@ function Ssoly:Window(cfg)
 	})
 	create("UICorner", {CornerRadius = UDim.new(1,0), Parent = resizeBarRight})
 	
-	-- Угловой ресайзер (L-образная полоска)
-	local resizeCornerH = create("Frame", {
+	-- Угловой ресайзер (скругленная полоска)
+	local resizeCorner = create("Frame", {
 		AnchorPoint = Vector2.new(1,1),
 		Position = UDim2.new(0,0,0,0),
-		Size = UDim2.fromOffset(40,3),
-		BackgroundColor3 = theme.Accent,
-		BackgroundTransparency = 0.5,
+		Size = UDim2.fromOffset(50,50),
+		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		Parent = gui
 	})
-	create("UICorner", {CornerRadius = UDim.new(1,0), Parent = resizeCornerH})
 	
-	local resizeCornerV = create("Frame", {
+	local resizeCornerArc = create("Frame", {
 		AnchorPoint = Vector2.new(1,1),
-		Position = UDim2.new(0,0,0,0),
-		Size = UDim2.fromOffset(3,40),
+		Position = UDim2.fromScale(1,1),
+		Size = UDim2.fromOffset(40,40),
 		BackgroundColor3 = theme.Accent,
 		BackgroundTransparency = 0.5,
 		BorderSizePixel = 0,
-		Parent = gui
+		Parent = resizeCorner
 	})
-	create("UICorner", {CornerRadius = UDim.new(1,0), Parent = resizeCornerV})
+	create("UICorner", {CornerRadius = UDim.new(1,0), Parent = resizeCornerArc})
+	create("UIStroke", {Color = theme.Accent, Thickness = 3, Transparency = 0.5, Parent = resizeCornerArc})
+	
+	local resizeCornerMask = create("Frame", {
+		Position = UDim2.fromOffset(0,0),
+		Size = UDim2.fromOffset(30,30),
+		BackgroundColor3 = theme.BG,
+		BorderSizePixel = 0,
+		Parent = resizeCorner
+	})
 	
 	local function updateResizeBars()
 		local mainPos = main.AbsolutePosition
 		local mainSize = main.AbsoluteSize
 		resizeBarBottom.Position = UDim2.fromOffset(mainPos.X + mainSize.X/2, mainPos.Y + mainSize.Y + 5)
 		resizeBarRight.Position = UDim2.fromOffset(mainPos.X + mainSize.X + 5, mainPos.Y + mainSize.Y/2)
-		resizeCornerH.Position = UDim2.fromOffset(mainPos.X + mainSize.X, mainPos.Y + mainSize.Y)
-		resizeCornerV.Position = UDim2.fromOffset(mainPos.X + mainSize.X, mainPos.Y + mainSize.Y)
+		resizeCorner.Position = UDim2.fromOffset(mainPos.X + mainSize.X, mainPos.Y + mainSize.Y)
 	end
 	
 	updateResizeBars()
@@ -655,16 +669,14 @@ function Ssoly:Window(cfg)
 	main.MouseEnter:Connect(function()
 		tween(resizeBarBottom, TweenInfo.new(0.3), {BackgroundTransparency = 0.3})
 		tween(resizeBarRight, TweenInfo.new(0.3), {BackgroundTransparency = 0.3})
-		tween(resizeCornerH, TweenInfo.new(0.3), {BackgroundTransparency = 0.3})
-		tween(resizeCornerV, TweenInfo.new(0.3), {BackgroundTransparency = 0.3})
+		tween(resizeCornerArc, TweenInfo.new(0.3), {BackgroundTransparency = 0.3})
 	end)
 	
 	main.MouseLeave:Connect(function()
 		if not resizingHeight and not resizingWidth and not resizingCorner then
 			tween(resizeBarBottom, TweenInfo.new(0.3), {BackgroundTransparency = 0.5})
 			tween(resizeBarRight, TweenInfo.new(0.3), {BackgroundTransparency = 0.5})
-			tween(resizeCornerH, TweenInfo.new(0.3), {BackgroundTransparency = 0.5})
-			tween(resizeCornerV, TweenInfo.new(0.3), {BackgroundTransparency = 0.5})
+			tween(resizeCornerArc, TweenInfo.new(0.3), {BackgroundTransparency = 0.5})
 		end
 	end)
 	
@@ -720,57 +732,24 @@ function Ssoly:Window(cfg)
 		startWidth = main.AbsoluteSize.X
 	end)
 	
-	local resizeCornerBtnH = create("TextButton", {
-		Size = UDim2.new(1,10,1,10),
-		AnchorPoint = Vector2.new(1,1),
-		Position = UDim2.fromScale(1,1),
+	local resizeCornerBtn = create("TextButton", {
+		Size = UDim2.fromScale(1,1),
 		BackgroundTransparency = 1,
 		Text = "",
-		Parent = resizeCornerH
+		Parent = resizeCorner
 	})
 	
-	local resizeCornerBtnV = create("TextButton", {
-		Size = UDim2.new(1,10,1,10),
-		AnchorPoint = Vector2.new(1,1),
-		Position = UDim2.fromScale(1,1),
-		BackgroundTransparency = 1,
-		Text = "",
-		Parent = resizeCornerV
-	})
-	
-	resizeCornerBtnH.MouseEnter:Connect(function()
-		tween(resizeCornerH, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.2, Size = UDim2.fromOffset(45,3)})
-		tween(resizeCornerV, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.2, Size = UDim2.fromOffset(3,45)})
+	resizeCornerBtn.MouseEnter:Connect(function()
+		tween(resizeCornerArc, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.2, Size = UDim2.fromOffset(45,45)})
 	end)
 	
-	resizeCornerBtnH.MouseLeave:Connect(function()
+	resizeCornerBtn.MouseLeave:Connect(function()
 		if not resizingCorner then
-			tween(resizeCornerH, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.3, Size = UDim2.fromOffset(40,3)})
-			tween(resizeCornerV, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.3, Size = UDim2.fromOffset(3,40)})
+			tween(resizeCornerArc, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.3, Size = UDim2.fromOffset(40,40)})
 		end
 	end)
 	
-	resizeCornerBtnV.MouseEnter:Connect(function()
-		tween(resizeCornerH, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.2, Size = UDim2.fromOffset(45,3)})
-		tween(resizeCornerV, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.2, Size = UDim2.fromOffset(3,45)})
-	end)
-	
-	resizeCornerBtnV.MouseLeave:Connect(function()
-		if not resizingCorner then
-			tween(resizeCornerH, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.3, Size = UDim2.fromOffset(40,3)})
-			tween(resizeCornerV, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.3, Size = UDim2.fromOffset(3,40)})
-		end
-	end)
-	
-	resizeCornerBtnH.MouseButton1Down:Connect(function()
-		resizingCorner = true
-		startX = UIS:GetMouseLocation().X
-		startY = UIS:GetMouseLocation().Y
-		startWidth = main.AbsoluteSize.X
-		startHeight = main.AbsoluteSize.Y
-	end)
-	
-	resizeCornerBtnV.MouseButton1Down:Connect(function()
+	resizeCornerBtn.MouseButton1Down:Connect(function()
 		resizingCorner = true
 		startX = UIS:GetMouseLocation().X
 		startY = UIS:GetMouseLocation().Y
@@ -790,8 +769,7 @@ function Ssoly:Window(cfg)
 			end
 			if resizingCorner then
 				resizingCorner = false
-				tween(resizeCornerH, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.3, Size = UDim2.fromOffset(40,3)})
-				tween(resizeCornerV, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.3, Size = UDim2.fromOffset(3,40)})
+				tween(resizeCornerArc, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.3, Size = UDim2.fromOffset(40,40)})
 			end
 		end
 	end)
@@ -955,12 +933,20 @@ function Ssoly:Window(cfg)
 			Size = UDim2.fromScale(1,1),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
-			ScrollBarThickness = 4,
+			ScrollBarThickness = 0,
 			CanvasSize = UDim2.fromScale(1,0),
 			AutomaticCanvasSize = Enum.AutomaticSize.Y,
 			Visible = false,
 			Parent = content
 		})
+		
+		tabContent:GetPropertyChangedSignal("CanvasSize"):Connect(function()
+			if tabContent.CanvasSize.Y.Offset > tabContent.AbsoluteSize.Y then
+				tabContent.ScrollBarThickness = 4
+			else
+				tabContent.ScrollBarThickness = 0
+			end
+		end)
 		
 		create("UIListLayout", {Padding = UDim.new(0,8), Parent = tabContent})
 		create("UIPadding", {PaddingTop = UDim.new(0,10), PaddingLeft = UDim.new(0,10), PaddingRight = UDim.new(0,10), Parent = tabContent})
@@ -1037,11 +1023,12 @@ function Ssoly:Window(cfg)
 				tween(frame, TweenInfo.new(0.2, Enum.EasingStyle.Sine), {BackgroundTransparency = 0.3})
 				tween(stroke, TweenInfo.new(0.2), {Transparency = 0.9})
 			end)
+			local btnScale = frame:FindFirstChildOfClass("UIScale") or create("UIScale", {Scale = 1, Parent = frame})
+			
 			btn.MouseButton1Click:Connect(function()
-				local scale = create("UIScale", {Scale = 1, Parent = frame})
-				tween(scale, TweenInfo.new(0.1), {Scale = 0.97})
+				tween(btnScale, TweenInfo.new(0.1), {Scale = 0.97})
 				task.wait(0.1)
-				tween(scale, TweenInfo.new(0.1), {Scale = 1})
+				tween(btnScale, TweenInfo.new(0.1), {Scale = 1})
 				if cfg.Callback then cfg.Callback() end
 			end)
 			
@@ -1076,7 +1063,7 @@ function Ssoly:Window(cfg)
 				AnchorPoint = Vector2.new(1,0.5),
 				Position = UDim2.new(1,-10,0.5,0),
 				Size = UDim2.fromOffset(40,20),
-				BackgroundColor3 = cfg.Default and theme.Accent or theme.Stroke,
+				BackgroundColor3 = cfg.Default and theme.Accent or Color3.fromRGB(60,60,60),
 				BorderSizePixel = 0,
 				Parent = frame
 			})
@@ -1104,7 +1091,7 @@ function Ssoly:Window(cfg)
 			
 			btn.MouseButton1Click:Connect(function()
 				state = not state
-				tween(toggle, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = state and theme.Accent or theme.Stroke})
+				tween(toggle, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = state and theme.Accent or Color3.fromRGB(60,60,60)})
 				tween(circle, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Position = state and UDim2.fromOffset(22,2) or UDim2.fromOffset(2,2)})
 				if cfg.Callback then cfg.Callback(state) end
 			end)
@@ -1116,7 +1103,7 @@ function Ssoly:Window(cfg)
 				end
 			end
 			
-			return {Set = function(self, v) state = v tween(toggle, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = v and theme.Accent or theme.Stroke}) tween(circle, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Position = v and UDim2.fromOffset(22,2) or UDim2.fromOffset(2,2)}) end}
+			return {Set = function(self, v) state = v tween(toggle, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = v and theme.Accent or Color3.fromRGB(60,60,60)}) tween(circle, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Position = v and UDim2.fromOffset(22,2) or UDim2.fromOffset(2,2)}) end}
 		end
 		
 		function tab:Slider(cfg)
@@ -1579,13 +1566,14 @@ function Ssoly:Window(cfg)
 				AnchorPoint = Vector2.new(1,0.5),
 				Position = UDim2.new(1,-10,0.5,0),
 				Size = UDim2.fromOffset(60,25),
-				BackgroundColor3 = theme.Stroke,
+				BackgroundColor3 = theme.ElementHover,
 				Text = cfg.Default and cfg.Default.Name or "...",
 				TextColor3 = theme.Text,
 				TextSize = 12,
 				Font = Enum.Font.Gotham,
 				ClearTextOnFocus = false,
 				PlaceholderText = "...",
+				PlaceholderColor3 = theme.TextDim,
 				Parent = frame
 			})
 			
@@ -2408,8 +2396,8 @@ function Ssoly:Window(cfg)
 		username.TextColor3 = theme.TextDim
 		resizeBarBottom.BackgroundColor3 = theme.Accent
 		resizeBarRight.BackgroundColor3 = theme.Accent
-		resizeCornerH.BackgroundColor3 = theme.Accent
-		resizeCornerV.BackgroundColor3 = theme.Accent
+		resizeCornerArc.BackgroundColor3 = theme.Accent
+		resizeCornerMask.BackgroundColor3 = theme.BG
 		
 		for _, stroke in ipairs(main:GetDescendants()) do
 			if stroke:IsA("UIStroke") then
