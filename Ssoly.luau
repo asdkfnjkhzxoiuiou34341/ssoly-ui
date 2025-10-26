@@ -246,6 +246,7 @@ function Ssoly:Window(cfg)
 		Size = UDim2.new(1,0,0,40),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
+		ZIndex = 10,
 		Parent = main
 	})
 	
@@ -370,9 +371,9 @@ function Ssoly:Window(cfg)
 		if isFullscreen then
 			savedSize = main.Size
 			local vpSize = workspace.CurrentCamera.ViewportSize
-			tween(main, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Size = UDim2.fromOffset(vpSize.X - 20, vpSize.Y - 20)})
+			main.Size = UDim2.fromOffset(vpSize.X - 20, vpSize.Y - 20)
 		else
-			tween(main, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Size = savedSize})
+			main.Size = savedSize
 		end
 	end)
 	
@@ -622,35 +623,27 @@ function Ssoly:Window(cfg)
 	})
 	create("UICorner", {CornerRadius = UDim.new(1,0), Parent = resizeBarRight})
 	
-	-- Угловой ресайзер (скругленная полоска)
+	-- Угловой ресайзер (линия по углу)
 	local resizeCorner = create("Frame", {
 		AnchorPoint = Vector2.new(1,1),
 		Position = UDim2.new(0,0,0,0),
-		Size = UDim2.fromOffset(50,50),
+		Size = UDim2.fromOffset(30,30),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		Parent = gui
 	})
 	
-	local resizeCornerArc = create("Frame", {
+	local resizeCornerLine = create("Frame", {
 		AnchorPoint = Vector2.new(1,1),
 		Position = UDim2.fromScale(1,1),
-		Size = UDim2.fromOffset(40,40),
-		BackgroundColor3 = theme.Accent,
-		BackgroundTransparency = 0.5,
+		Size = UDim2.fromOffset(20,20),
+		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		Parent = resizeCorner
 	})
-	create("UICorner", {CornerRadius = UDim.new(1,0), Parent = resizeCornerArc})
-	create("UIStroke", {Color = theme.Accent, Thickness = 3, Transparency = 0.5, Parent = resizeCornerArc})
 	
-	local resizeCornerMask = create("Frame", {
-		Position = UDim2.fromOffset(0,0),
-		Size = UDim2.fromOffset(30,30),
-		BackgroundColor3 = theme.BG,
-		BorderSizePixel = 0,
-		Parent = resizeCorner
-	})
+	create("UIStroke", {Color = theme.Accent, Thickness = 3, Transparency = 0.5, Parent = resizeCornerLine})
+	create("UICorner", {CornerRadius = UDim.new(1,0), Parent = resizeCornerLine})
 	
 	local function updateResizeBars()
 		local mainPos = main.AbsolutePosition
@@ -669,14 +662,22 @@ function Ssoly:Window(cfg)
 	main.MouseEnter:Connect(function()
 		tween(resizeBarBottom, TweenInfo.new(0.3), {BackgroundTransparency = 0.3})
 		tween(resizeBarRight, TweenInfo.new(0.3), {BackgroundTransparency = 0.3})
-		tween(resizeCornerArc, TweenInfo.new(0.3), {BackgroundTransparency = 0.3})
+		for _, stroke in ipairs(resizeCornerLine:GetChildren()) do
+			if stroke:IsA("UIStroke") then
+				tween(stroke, TweenInfo.new(0.3), {Transparency = 0.3})
+			end
+		end
 	end)
 	
 	main.MouseLeave:Connect(function()
 		if not resizingHeight and not resizingWidth and not resizingCorner then
 			tween(resizeBarBottom, TweenInfo.new(0.3), {BackgroundTransparency = 0.5})
 			tween(resizeBarRight, TweenInfo.new(0.3), {BackgroundTransparency = 0.5})
-			tween(resizeCornerArc, TweenInfo.new(0.3), {BackgroundTransparency = 0.5})
+			for _, stroke in ipairs(resizeCornerLine:GetChildren()) do
+				if stroke:IsA("UIStroke") then
+					tween(stroke, TweenInfo.new(0.3), {Transparency = 0.5})
+				end
+			end
 		end
 	end)
 	
@@ -740,12 +741,22 @@ function Ssoly:Window(cfg)
 	})
 	
 	resizeCornerBtn.MouseEnter:Connect(function()
-		tween(resizeCornerArc, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.2, Size = UDim2.fromOffset(45,45)})
+		tween(resizeCornerLine, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Size = UDim2.fromOffset(24,24)})
+		for _, stroke in ipairs(resizeCornerLine:GetChildren()) do
+			if stroke:IsA("UIStroke") then
+				tween(stroke, TweenInfo.new(0.3), {Transparency = 0.2})
+			end
+		end
 	end)
 	
 	resizeCornerBtn.MouseLeave:Connect(function()
 		if not resizingCorner then
-			tween(resizeCornerArc, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.3, Size = UDim2.fromOffset(40,40)})
+			tween(resizeCornerLine, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Size = UDim2.fromOffset(20,20)})
+			for _, stroke in ipairs(resizeCornerLine:GetChildren()) do
+				if stroke:IsA("UIStroke") then
+					tween(stroke, TweenInfo.new(0.3), {Transparency = 0.3})
+				end
+			end
 		end
 	end)
 	
@@ -769,7 +780,12 @@ function Ssoly:Window(cfg)
 			end
 			if resizingCorner then
 				resizingCorner = false
-				tween(resizeCornerArc, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.3, Size = UDim2.fromOffset(40,40)})
+				tween(resizeCornerLine, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Size = UDim2.fromOffset(20,20)})
+				for _, stroke in ipairs(resizeCornerLine:GetChildren()) do
+					if stroke:IsA("UIStroke") then
+						tween(stroke, TweenInfo.new(0.3), {Transparency = 0.3})
+					end
+				end
 			end
 		end
 	end)
@@ -2396,8 +2412,11 @@ function Ssoly:Window(cfg)
 		username.TextColor3 = theme.TextDim
 		resizeBarBottom.BackgroundColor3 = theme.Accent
 		resizeBarRight.BackgroundColor3 = theme.Accent
-		resizeCornerArc.BackgroundColor3 = theme.Accent
-		resizeCornerMask.BackgroundColor3 = theme.BG
+		for _, stroke in ipairs(resizeCornerLine:GetChildren()) do
+			if stroke:IsA("UIStroke") then
+				stroke.Color = theme.Accent
+			end
+		end
 		
 		for _, stroke in ipairs(main:GetDescendants()) do
 			if stroke:IsA("UIStroke") then
