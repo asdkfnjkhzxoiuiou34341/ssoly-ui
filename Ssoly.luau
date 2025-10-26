@@ -2339,10 +2339,9 @@ function Ssoly:Window(cfg)
 		if state then
 			main.Visible = true
 			main.GroupTransparency = 1
-			main.Size = UDim2.fromOffset((cfg.Size or UDim2.fromOffset(700,500)).X.Offset * 0.95, (cfg.Size or UDim2.fromOffset(700,500)).Y.Offset * 0.95)
-			tween(main, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {GroupTransparency = 0, Size = cfg.Size or UDim2.fromOffset(700,500)})
-			resizeBarBottom.Position = UDim2.new(0.5,0,0.5,main.AbsoluteSize.Y/2 + 10)
-			resizeCorner.Position = UDim2.new(0.5,main.AbsoluteSize.X/2 + 10,0.5,main.AbsoluteSize.Y/2 - 20)
+			local targetSize = cfg.Size or UDim2.fromOffset(868,650)
+			main.Size = UDim2.fromOffset(targetSize.X.Offset * 0.95, targetSize.Y.Offset * 0.95)
+			tween(main, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {GroupTransparency = 0, Size = targetSize})
 		else
 			local targetSize = UDim2.fromOffset(main.AbsoluteSize.X * 0.95, main.AbsoluteSize.Y * 0.95)
 			tween(main, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {GroupTransparency = 1, Size = targetSize})
@@ -2377,7 +2376,7 @@ function Ssoly:Window(cfg)
 	
 	function window:SetAcrylicBlur(state)
 		acrylicBlur = state
-		main.BackgroundTransparency = state and 0.15 or 0
+		main.BackgroundTransparency = state and 0.05 or 0
 	end
 	
 	function window:GetAcrylicBlur()
@@ -2399,9 +2398,6 @@ function Ssoly:Window(cfg)
 		currentTheme = themeName
 		
 		main.BackgroundColor3 = theme.BG
-		topbar.BackgroundColor3 = theme.TopBar
-		cornerRepair.BackgroundColor3 = theme.TopBar
-		sidebar.BackgroundColor3 = theme.BG
 		title.TextColor3 = theme.Text
 		subtitle.TextColor3 = theme.TextDim
 		searchBox.BackgroundColor3 = theme.Element
@@ -2412,6 +2408,8 @@ function Ssoly:Window(cfg)
 		username.TextColor3 = theme.TextDim
 		resizeBarBottom.BackgroundColor3 = theme.Accent
 		resizeBarRight.BackgroundColor3 = theme.Accent
+		resizeCornerH.BackgroundColor3 = theme.Accent
+		resizeCornerV.BackgroundColor3 = theme.Accent
 		
 		for _, stroke in ipairs(main:GetDescendants()) do
 			if stroke:IsA("UIStroke") then
