@@ -1189,7 +1189,7 @@ function Ssoly:Window(cfg)
 			})
 			
 			create("UICorner", {CornerRadius = UDim.new(1,0), Parent = handle})
-			create("UIStroke", {Color = theme.Accent, Thickness = 2, Parent = handle})
+			create("UIStroke", {Color = Color3.fromRGB(0,0,0), Thickness = 1, Transparency = 0.3, Parent = handle})
 			
 			local dragging = false
 			
@@ -1711,17 +1711,21 @@ function Ssoly:Window(cfg)
 			colorBox.MouseButton1Click:Connect(function()
 				if pickerOpen then
 					pickerOpen = false
-					tween(frame, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,40)})
-					if picker then 
-						task.wait(0.3)
-						picker:Destroy() 
-						picker = nil 
+					if picker then
+						local pickerScale = picker:FindFirstChildOfClass("UIScale")
+						if pickerScale then
+							tween(pickerScale, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {Scale = 0})
+						end
+						task.wait(0.2)
+						picker:Destroy()
+						picker = nil
 					end
+					tween(frame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {Size = UDim2.new(1,0,0,40)})
 					return
 					end
 				
 				pickerOpen = true
-				tween(frame, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,230)})
+				tween(frame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {Size = UDim2.new(1,0,0,230)})
 				
 				picker = create("Frame", {
 					Position = UDim2.fromOffset(10,50),
@@ -1729,6 +1733,10 @@ function Ssoly:Window(cfg)
 					BackgroundTransparency = 1,
 					Parent = frame
 				})
+				
+				local pickerScale = create("UIScale", {Scale = 0, Parent = picker})
+				task.wait(0.05)
+				tween(pickerScale, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {Scale = 1})
 				
 				local h,s,v = currentColor:ToHSV()
 				
@@ -1861,12 +1869,16 @@ function Ssoly:Window(cfg)
 				
 				selectBtn.MouseButton1Click:Connect(function()
 					pickerOpen = false
-					tween(frame, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,0,40)})
-					if picker then 
-						task.wait(0.3)
-						picker:Destroy() 
-						picker = nil 
+					if picker then
+						local pickerScale = picker:FindFirstChildOfClass("UIScale")
+						if pickerScale then
+							tween(pickerScale, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {Scale = 0})
+						end
+						task.wait(0.2)
+						picker:Destroy()
+						picker = nil
 					end
+					tween(frame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {Size = UDim2.new(1,0,0,40)})
 				end)
 				end)
 			
@@ -2410,6 +2422,12 @@ function Ssoly:Window(cfg)
 		searchInput.PlaceholderColor3 = theme.TextDim
 		displayName.TextColor3 = theme.Text
 		username.TextColor3 = theme.TextDim
+		fullscreen.BackgroundColor3 = theme.ElementHover
+		minimize.BackgroundColor3 = theme.ElementHover
+		close.BackgroundColor3 = theme.ElementHover
+		fullscreenIcon.ImageColor3 = theme.Text
+		minimizeIcon.ImageColor3 = theme.Text
+		closeIcon.ImageColor3 = theme.Text
 		resizeBarBottom.BackgroundColor3 = theme.Accent
 		resizeBarRight.BackgroundColor3 = theme.Accent
 		for _, stroke in ipairs(resizeCornerLine:GetChildren()) do
@@ -2418,14 +2436,36 @@ function Ssoly:Window(cfg)
 			end
 		end
 		
-		for _, stroke in ipairs(main:GetDescendants()) do
-			if stroke:IsA("UIStroke") then
-				stroke.Color = theme.Stroke
+		for _, desc in ipairs(main:GetDescendants()) do
+			if desc:IsA("Frame") or desc:IsA("TextButton") then
+				if desc.Name ~= "Main" and desc.BackgroundColor3 == Color3.fromRGB(25,25,25) then
+					desc.BackgroundColor3 = theme.Element
+				elseif desc.BackgroundColor3 == Color3.fromRGB(30,30,30) then
+					desc.BackgroundColor3 = theme.ElementHover
+				end
+			end
+			if desc:IsA("TextLabel") or desc:IsA("TextButton") or desc:IsA("TextBox") then
+				if desc.TextColor3 == Color3.fromRGB(255,255,255) then
+					desc.TextColor3 = theme.Text
+				elseif desc.TextColor3 == Color3.fromRGB(160,160,160) then
+					desc.TextColor3 = theme.TextDim
+				end
+				if desc:IsA("TextBox") and desc.PlaceholderColor3 then
+					desc.PlaceholderColor3 = theme.TextDim
+				end
+			end
+			if desc:IsA("UIStroke") then
+				desc.Color = theme.Stroke
+			end
+			if desc:IsA("ImageLabel") then
+				if desc.ImageColor3 == Color3.fromRGB(255,255,255) or desc.ImageColor3 == Color3.fromRGB(160,160,160) then
+					desc.ImageColor3 = theme.Text
+				end
 			end
 		end
 		
 		for _, tab in pairs(tabs) do
-			if tab.btn.BackgroundColor3 == theme.Accent or tab == tabs[1] then
+			if tab.content.Visible then
 				tab.btn.BackgroundColor3 = theme.Accent
 				tab.indicator.BackgroundColor3 = theme.Accent
 			else
