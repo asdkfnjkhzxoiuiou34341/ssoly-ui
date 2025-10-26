@@ -14,15 +14,15 @@ local Player = Players.LocalPlayer
 
 Ssoly.Themes = {
 	Dark = {
-		BG = Color3.fromRGB(18,18,22),
-		TopBar = Color3.fromRGB(22,22,28),
-		Element = Color3.fromRGB(28,28,35),
-		ElementHover = Color3.fromRGB(35,35,42),
-		Text = Color3.fromRGB(245,245,250),
-		TextDim = Color3.fromRGB(160,160,170),
+		BG = Color3.fromRGB(15,15,15),
+		TopBar = Color3.fromRGB(15,15,15),
+		Element = Color3.fromRGB(25,25,25),
+		ElementHover = Color3.fromRGB(30,30,30),
+		Text = Color3.fromRGB(255,255,255),
+		TextDim = Color3.fromRGB(160,160,160),
 		Accent = Color3.fromRGB(88,101,242),
-		Stroke = Color3.fromRGB(45,45,55),
-		Shadow = Color3.fromRGB(10,10,12)
+		Stroke = Color3.fromRGB(255,255,255),
+		Shadow = Color3.fromRGB(10,10,10)
 	},
 	Light = {
 		BG = Color3.fromRGB(245,245,250),
@@ -230,34 +230,23 @@ function Ssoly:Window(cfg)
 		Name = "Main",
 		AnchorPoint = Vector2.new(0.5,0.5),
 		Position = UDim2.fromScale(0.5,0.5),
-		Size = cfg.Size or UDim2.fromOffset(700,500),
+		Size = cfg.Size or UDim2.fromOffset(868,650),
 		BackgroundColor3 = theme.BG,
-		BackgroundTransparency = acrylicBlur and 0.15 or 0,
+		BackgroundTransparency = acrylicBlur and 0.05 or 0,
 		BorderSizePixel = 0,
 		GroupTransparency = 0,
 		Parent = gui
 	})
 	
 	create("UICorner", {CornerRadius = UDim.new(0,12), Parent = main})
-	create("UIStroke", {Color = theme.Stroke, Transparency = 0.7, Parent = main})
+	create("UIStroke", {Color = theme.Stroke, Transparency = 0.9, Parent = main})
 	
 	local topbar = create("Frame", {
 		Name = "TopBar",
 		Size = UDim2.new(1,0,0,40),
-		BackgroundColor3 = theme.TopBar,
+		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		Parent = main
-	})
-	
-	create("UICorner", {CornerRadius = UDim.new(0,12), Parent = topbar})
-	
-	-- Corner repair для нижней части topbar
-	local cornerRepair = create("Frame", {
-		Position = UDim2.fromOffset(0,28),
-		Size = UDim2.new(1,0,0,12),
-		BackgroundColor3 = theme.TopBar,
-		BorderSizePixel = 0,
-		Parent = topbar
 	})
 	
 	local titleFrame = create("Frame", {
@@ -394,9 +383,9 @@ function Ssoly:Window(cfg)
 	
 	local sidebar = create("Frame", {
 		Name = "Sidebar",
-		Position = UDim2.fromOffset(0,40),
-		Size = UDim2.new(0,180,1,-40),
-		BackgroundColor3 = theme.BG,
+		Position = UDim2.fromOffset(0,0),
+		Size = UDim2.fromScale(0.325,1),
+		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		Parent = main
 	})
@@ -578,8 +567,9 @@ function Ssoly:Window(cfg)
 	
 	local content = create("Frame", {
 		Name = "Content",
-		Position = UDim2.fromOffset(180,40),
-		Size = UDim2.new(1,-180,1,-40),
+		AnchorPoint = Vector2.new(1,0),
+		Position = UDim2.fromScale(1,0),
+		Size = UDim2.fromScale(0.675,1),
 		BackgroundTransparency = 1,
 		Parent = main
 	})
