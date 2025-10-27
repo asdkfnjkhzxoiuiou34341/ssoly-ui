@@ -208,8 +208,8 @@ function Ssoly:Window(Settings)
 	local exit = Instance.new("TextButton")
 	exit.Name = "Exit"
 	exit.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json")
-	exit.Text = ""
-	exit.TextColor3 = Color3.fromRGB(0, 0, 0)
+	exit.Text = "✕"
+	exit.TextColor3 = Color3.fromRGB(255, 255, 255)
 	exit.TextSize = 14
 	exit.AutoButtonColor = false
 	exit.BackgroundColor3 = Color3.fromRGB(250, 93, 86)
@@ -226,8 +226,8 @@ function Ssoly:Window(Settings)
 	local minimize = Instance.new("TextButton")
 	minimize.Name = "Minimize"
 	minimize.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json")
-	minimize.Text = ""
-	minimize.TextColor3 = Color3.fromRGB(0, 0, 0)
+	minimize.Text = "—"
+	minimize.TextColor3 = Color3.fromRGB(255, 255, 255)
 	minimize.TextSize = 14
 	minimize.AutoButtonColor = false
 	minimize.BackgroundColor3 = Color3.fromRGB(252, 190, 57)
@@ -1887,6 +1887,7 @@ function Ssoly:Window(Settings)
 					sliderValue.Position = UDim2.fromScale(-0.0789, 0.171)
 					sliderValue.Size = UDim2.fromOffset(41, 21)
 					sliderValue.ClipsDescendants = true
+					sliderValue.ZIndex = 2
 
 					local sliderValueUICorner = Instance.new("UICorner")
 					sliderValueUICorner.Name = "SliderValueUICorner"
@@ -1927,6 +1928,7 @@ function Ssoly:Window(Settings)
 					sliderBar.BorderSizePixel = 0
 					sliderBar.Position = UDim2.fromScale(0.219, 0.457)
 					sliderBar.Size = UDim2.fromOffset(123, 3)
+					sliderBar.ZIndex = 1
 
 					local sliderHead = Instance.new("ImageButton")
 					sliderHead.Name = "SliderHead"
@@ -4028,7 +4030,7 @@ function Ssoly:Window(Settings)
 						local rY = iX - slider.AbsolutePosition.X
 						local cY = math.clamp(rY, 0, slider.AbsoluteSize.X - slide.AbsoluteSize.X)
 						slide.Position = udim2(0, cY, 0.5, 0)
-						value = 1 - (cY / (slider.AbsoluteSize.X - slide.AbsoluteSize.X))
+						value = (cY / (slider.AbsoluteSize.X - slide.AbsoluteSize.X))
 						update()
 					end
 
